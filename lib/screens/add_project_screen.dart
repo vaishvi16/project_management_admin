@@ -1,6 +1,8 @@
 // lib/screens/add_project_screen.dart
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+
 import '../models/project.dart';
 
 class AddProjectScreen extends StatefulWidget {
@@ -29,10 +31,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
       appBar: AppBar(
         title: const Text(
           'Create New Project',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
         elevation: 0,
@@ -44,10 +43,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade50,
-              Colors.white,
-            ],
+            colors: [Colors.blue.shade50, Colors.white],
           ),
         ),
         child: Padding(
@@ -81,10 +77,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Fill in the project details to get started',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 32),
 
@@ -112,7 +105,9 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                             controller: _clientController,
                             label: 'Client Name',
                             icon: Icons.business_center_outlined,
-                            validator: (value) => value?.isEmpty ?? true ? 'Please enter client name' : null,
+                            validator: (value) => value?.isEmpty ?? true
+                                ? 'Please enter client name'
+                                : null,
                           ),
                           const SizedBox(height: 20),
 
@@ -121,7 +116,9 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                             controller: _nameController,
                             label: 'Project Name',
                             icon: Icons.folder_outlined,
-                            validator: (value) => value?.isEmpty ?? true ? 'Please enter project name' : null,
+                            validator: (value) => value?.isEmpty ?? true
+                                ? 'Please enter project name'
+                                : null,
                           ),
                           const SizedBox(height: 20),
 
@@ -131,7 +128,9 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                             label: 'Project Description',
                             icon: Icons.description_outlined,
                             maxLines: 3,
-                            validator: (value) => value?.isEmpty ?? true ? 'Please enter project description' : null,
+                            validator: (value) => value?.isEmpty ?? true
+                                ? 'Please enter project description'
+                                : null,
                           ),
                           const SizedBox(height: 20),
 
@@ -146,7 +145,11 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                             icon: Icons.people_outline,
                             onChanged: (value) {
                               setState(() {
-                                _members = value.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+                                _members = value
+                                    .split(',')
+                                    .map((e) => e.trim())
+                                    .where((e) => e.isNotEmpty)
+                                    .toList();
                               });
                             },
                           ),
@@ -174,7 +177,9 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                               ),
                               child: const Text(
                                 'Create Project',
@@ -223,11 +228,17 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
+            width: 2,
+          ),
         ),
         filled: true,
         fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 16,
+        ),
       ),
       validator: validator,
       onChanged: onChanged,
@@ -251,22 +262,29 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
+            width: 2,
+          ),
         ),
         filled: true,
         fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      ),
-      items: _types.map((type) => DropdownMenuItem(
-        value: type,
-        child: Text(
-          type,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey.shade700,
-          ),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 16,
         ),
-      )).toList(),
+      ),
+      items: _types
+          .map(
+            (type) => DropdownMenuItem(
+              value: type,
+              child: Text(
+                type,
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+              ),
+            ),
+          )
+          .toList(),
       onChanged: (value) => setState(() => _selectedType = value),
       validator: (value) => value == null ? 'Please select project type' : null,
       icon: Icon(Icons.arrow_drop_down, color: Colors.grey.shade500),
@@ -279,23 +297,24 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: _members.map((member) => Chip(
-        label: Text(
-          member,
-          style: const TextStyle(fontSize: 12),
-        ),
-        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        deleteIcon: const Icon(Icons.close, size: 16),
-        onDeleted: () {
-          setState(() {
-            _members.remove(member);
-            _membersController.text = _members.join(', ');
-          });
-        },
-      )).toList(),
+      children: _members
+          .map(
+            (member) => Chip(
+              label: Text(member, style: const TextStyle(fontSize: 12)),
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              deleteIcon: const Icon(Icons.close, size: 16),
+              onDeleted: () {
+                setState(() {
+                  _members.remove(member);
+                  _membersController.text = _members.join(', ');
+                });
+              },
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -350,12 +369,16 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
-          foregroundColor: date == null ? Colors.grey.shade600 : Theme.of(context).primaryColor,
+          foregroundColor: date == null
+              ? Colors.grey.shade600
+              : Theme.of(context).primaryColor,
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(
-              color: date == null ? Colors.grey.shade300 : Theme.of(context).primaryColor,
+              color: date == null
+                  ? Colors.grey.shade300
+                  : Theme.of(context).primaryColor,
               width: 1.5,
             ),
           ),
@@ -366,7 +389,9 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
             Icon(
               Icons.calendar_today_outlined,
               size: 18,
-              color: date == null ? Colors.grey.shade500 : Theme.of(context).primaryColor,
+              color: date == null
+                  ? Colors.grey.shade500
+                  : Theme.of(context).primaryColor,
             ),
             const SizedBox(width: 8),
             Flexible(
@@ -374,7 +399,9 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                 date == null ? label : DateFormat('MMM dd, yyyy').format(date),
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: date == null ? FontWeight.normal : FontWeight.w600,
+                  fontWeight: date == null
+                      ? FontWeight.normal
+                      : FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -429,7 +456,9 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
   }
 
   Future<void> _selectEndDate() async {
-    final initialDate = _startDate?.add(const Duration(days: 30)) ?? DateTime.now().add(const Duration(days: 30));
+    final initialDate =
+        _startDate?.add(const Duration(days: 30)) ??
+        DateTime.now().add(const Duration(days: 30));
     final date = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -478,6 +507,8 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         status: 'pending',
       );
 
+      _insertProject();
+
       // Simulate save and return
       Navigator.pop(context, newProject);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -498,5 +529,32 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     _clientController.dispose();
     _membersController.dispose();
     super.dispose();
+  }
+
+  Future<void> _insertProject() async {
+    var url = Uri.parse(
+      "https://prakrutitech.xyz/batch_project/insert_project.php",
+    );
+   var response = await http.post(
+      url,
+      body: {
+        "client_name": _clientController.text.toString(),
+        "title": _nameController.text.toString(),
+        "description": _descController.text.toString(),
+        "type": _selectedType.toString(),
+        "status": "Pending",
+        "members_name": _membersController.text.toString(),
+        "start_date": _startDate.toString(),
+        "end_date": _endDate.toString(),
+      },
+    );
+
+   if(response.statusCode == 200){
+     print("everything is working!!!! ${response.body}");
+   }
+   else{
+     print("not working");
+   }
+
   }
 }

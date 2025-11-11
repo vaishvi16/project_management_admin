@@ -1,59 +1,15 @@
 // lib/screens/project_details_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../models/project.dart';
-import 'dashboard_screen.dart';
 import 'add_project_screen.dart';
+import 'dashboard_screen.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
   const ProjectDetailsScreen({super.key});
 
-  static final List<Project> _projects = [
-    Project(
-        id: '1',
-        name: 'Project Alpha',
-        description: 'AI Integration for enhanced user experience with advanced machine learning capabilities',
-        type: 'Web',
-        members: ['User1', 'User2'],
-        startDate: DateTime.now().subtract(const Duration(days: 30)),
-        endDate: DateTime.now().add(const Duration(days: 60)),
-        progress: 0.7,
-        status: 'continue'
-    ),
-    Project(
-        id: '2',
-        name: 'Project Beta',
-        description: 'Mobile App Development with Flutter and Firebase integration',
-        type: 'Mobile',
-        members: ['User3', 'User4', 'User5'],
-        startDate: DateTime.now().subtract(const Duration(days: 15)),
-        endDate: DateTime.now().add(const Duration(days: 45)),
-        progress: 0.4,
-        status: 'pending'
-    ),
-    Project(
-        id: '3',
-        name: 'Project Gamma',
-        description: 'Backend API Optimization and microservices architecture',
-        type: 'Backend',
-        members: ['User6', 'User7'],
-        startDate: DateTime.now().subtract(const Duration(days: 45)),
-        endDate: DateTime.now().add(const Duration(days: 90)),
-        progress: 0.9,
-        status: 'approved'
-    ),
-    Project(
-        id: '4',
-        name: 'Project Delta',
-        description: 'Cloud Infrastructure Migration and DevOps implementation',
-        type: 'Infrastructure',
-        members: ['User8', 'User9', 'User10'],
-        startDate: DateTime.now().subtract(const Duration(days: 60)),
-        endDate: DateTime.now().add(const Duration(days: 30)),
-        progress: 0.6,
-        status: 'onhold'
-    ),
-  ];
+  static final List<Project> _projects = [];
 
   @override
   State<ProjectDetailsScreen> createState() => _ProjectDetailsScreenState();
@@ -94,19 +50,17 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       ),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.3, 1, curve: Curves.easeOutCubic),
-      ),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.3, 1, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _staggerAnimations = List.generate(
       ProjectDetailsScreen._projects.length,
-          (index) => Tween<double>(begin: 0, end: 1).animate(
+      (index) => Tween<double>(begin: 0, end: 1).animate(
         CurvedAnimation(
           parent: _animationController,
           curve: Interval(0.2 + (0.15 * index), 1.0, curve: Curves.elasticOut),
@@ -140,9 +94,15 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
   List<Project> get _filteredProjects {
     if (_searchQuery.isEmpty) return ProjectDetailsScreen._projects;
-    return ProjectDetailsScreen._projects.where((project) =>
-    project.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        project.description.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    return ProjectDetailsScreen._projects
+        .where(
+          (project) =>
+              project.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              project.description.toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              ),
+        )
+        .toList();
   }
 
   // Safe opacity getter that clamps values between 0 and 1
@@ -152,7 +112,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
   // Safe scale getter that prevents invalid values
   double _getSafeScale(Animation<double> animation) {
-    return animation.value.clamp(0.01, 1.0); // Minimum scale of 0.01 to avoid invisible elements
+    return animation.value.clamp(
+      0.01,
+      1.0,
+    ); // Minimum scale of 0.01 to avoid invisible elements
   }
 
   @override
@@ -177,18 +140,19 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
             ),
           ),
         ),
-        backgroundColor: _scrollOffset > 100 ? Colors.white.withOpacity(0.95) : Colors.transparent,
+        backgroundColor: _scrollOffset > 100
+            ? Colors.white.withOpacity(0.95)
+            : Colors.transparent,
         elevation: _scrollOffset > 100 ? 4 : 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: _scrollOffset > 100 ? null : const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF1976D2),
-                Color(0xFF7B1FA2),
-              ],
-            ),
+            gradient: _scrollOffset > 100
+                ? null
+                : const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
+                  ),
           ),
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -211,10 +175,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF1976D2),
-                    Color(0xFF7B1FA2),
-                  ],
+                  colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
                 ),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(32),
@@ -270,13 +231,20 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
                         // Search Bar
                         SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, 0.5),
-                            end: Offset.zero,
-                          ).animate(CurvedAnimation(
-                            parent: _animationController,
-                            curve: const Interval(0.5, 1, curve: Curves.easeOut),
-                          )),
+                          position:
+                              Tween<Offset>(
+                                begin: const Offset(0, 0.5),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: _animationController,
+                                  curve: const Interval(
+                                    0.5,
+                                    1,
+                                    curve: Curves.easeOut,
+                                  ),
+                                ),
+                              ),
                           child: FadeTransition(
                             opacity: _fadeAnimation,
                             child: Container(
@@ -289,14 +257,23 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                               ),
                               child: TextField(
                                 controller: _searchController,
-                                onChanged: (value) => setState(() => _searchQuery = value),
+                                onChanged: (value) =>
+                                    setState(() => _searchQuery = value),
                                 style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
                                   hintText: 'Search projects...',
-                                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                                  prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.7)),
+                                  hintStyle: TextStyle(
+                                    color: Colors.white.withOpacity(0.7),
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.search,
+                                    color: Colors.white.withOpacity(0.7),
+                                  ),
                                   border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 16,
+                                  ),
                                 ),
                               ),
                             ),
@@ -327,10 +304,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                   ),
                   Text(
                     'Sorted by: Recent',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
                 ],
               ),
@@ -338,11 +312,11 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           ),
 
           // Projects Grid/List
-          isWideScreen ? _buildWideScreenGrid(filteredProjects) : _buildMobileList(filteredProjects),
+          isWideScreen
+              ? _buildWideScreenGrid(filteredProjects)
+              : _buildMobileList(filteredProjects),
 
-          SliverToBoxAdapter(
-            child: const SizedBox(height: 100),
-          ),
+          SliverToBoxAdapter(child: const SizedBox(height: 100)),
         ],
       ),
       floatingActionButton: _buildFloatingActionButton(),
@@ -359,10 +333,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: RadialGradient(
-            colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.transparent,
-            ],
+            colors: [Colors.white.withOpacity(0.1), Colors.transparent],
           ),
         ),
       ),
@@ -380,7 +351,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           childAspectRatio: 1.6,
         ),
         delegate: SliverChildBuilderDelegate(
-              (context, index) => _buildProjectCard(projects[index], index),
+          (context, index) => _buildProjectCard(projects[index], index),
           childCount: projects.length,
         ),
       ),
@@ -390,7 +361,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   Widget _buildMobileList(List<Project> projects) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-            (context, index) => Padding(
+        (context, index) => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: _buildProjectCard(projects[index], index),
         ),
@@ -554,7 +525,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                                     duration: const Duration(milliseconds: 800),
                                     curve: Curves.easeOut,
                                     height: 6,
-                                    width: constraints.maxWidth * project.progress,
+                                    width:
+                                        constraints.maxWidth * project.progress,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
@@ -581,7 +553,11 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                           // Members
                           Row(
                             children: [
-                              Icon(Icons.people_outline, size: 16, color: Colors.grey.shade600),
+                              Icon(
+                                Icons.people_outline,
+                                size: 16,
+                                color: Colors.grey.shade600,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 '${project.members.length} members',
@@ -596,14 +572,22 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                           // Timeline
                           Row(
                             children: [
-                              Icon(Icons.schedule, size: 16, color: Colors.grey.shade600),
+                              Icon(
+                                Icons.schedule,
+                                size: 16,
+                                color: Colors.grey.shade600,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 '$daysRemaining days left',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: daysRemaining < 7 ? const Color(0xFFF57C00) : Colors.grey.shade600,
-                                  fontWeight: daysRemaining < 7 ? FontWeight.w600 : FontWeight.normal,
+                                  color: daysRemaining < 7
+                                      ? const Color(0xFFF57C00)
+                                      : Colors.grey.shade600,
+                                  fontWeight: daysRemaining < 7
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
                                 ),
                               ),
                             ],
@@ -647,10 +631,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
           Text(
@@ -693,7 +674,9 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           ),
           backgroundColor: const Color(0xFF7B1FA2),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
     );
@@ -708,16 +691,17 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const DashboardScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const DashboardScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(1, 0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeInOutCubic,
-            )),
+            position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+                .animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOutCubic,
+                  ),
+                ),
             child: child,
           );
         },
