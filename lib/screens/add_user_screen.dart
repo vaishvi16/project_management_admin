@@ -1,5 +1,10 @@
 // lib/screens/add_user_screen.dart
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../models/project.dart';
 
 class AddUserScreen extends StatefulWidget {
   const AddUserScreen({super.key});
@@ -259,6 +264,8 @@ class _AddUserScreenState extends State<AddUserScreen> {
   void _addUser() {
     if (_formKey.currentState?.validate() ?? false) {
       // Add user logic here
+
+      _insertUser();
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -278,5 +285,29 @@ class _AddUserScreenState extends State<AddUserScreen> {
     _contactController.dispose();
     _emailController.dispose();
     super.dispose();
+  }
+
+  Future<void> _insertUser() async {
+    var url = Uri.parse(
+      "https://prakrutitech.xyz/batch_project/insert_user.php",
+    );
+    var response = await http.post(
+      url,
+      body: {
+        "name": _nameController.text.toString(),
+        "role":_selectedRole,
+        "email": _emailController.text.toString(),
+        "phone_number": _contactController.text.toString(),
+        "password": _passwordController.text.toString(),
+        },
+    );
+
+    if(response.statusCode == 200){
+      print("everything is working for insert user api!!! ${response.body}");
+    }
+    else{
+      print("not working");
+    }
+
   }
 }
