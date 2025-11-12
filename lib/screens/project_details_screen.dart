@@ -1,6 +1,9 @@
 // lib/screens/project_details_screen.dart
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 import '../models/project.dart';
 import 'add_project_screen.dart';
@@ -8,8 +11,6 @@ import 'dashboard_screen.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
   const ProjectDetailsScreen({super.key});
-
-  static final List<Project> _projects = [];
 
   @override
   State<ProjectDetailsScreen> createState() => _ProjectDetailsScreenState();
@@ -26,6 +27,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   String _searchQuery = '';
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0;
+
+  late Future<List<Project>> _projectsFuture;
 
   @override
   void initState() {
@@ -58,16 +61,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           ),
         );
 
-    _staggerAnimations = List.generate(
-      ProjectDetailsScreen._projects.length,
-      (index) => Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-          parent: _animationController,
-          curve: Interval(0.2 + (0.15 * index), 1.0, curve: Curves.elasticOut),
-        ),
-      ),
-    );
-
     _scrollController.addListener(_onScroll);
 
     // Start animations after frame is built
@@ -75,6 +68,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       _animationController.forward();
       _pulseController.repeat(reverse: true);
     });
+
+    _projectsFuture = getProjects();
   }
 
   void _onScroll() {
@@ -92,17 +87,13 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     super.dispose();
   }
 
-  List<Project> get _filteredProjects {
-    if (_searchQuery.isEmpty) return ProjectDetailsScreen._projects;
-    return ProjectDetailsScreen._projects
-        .where(
-          (project) =>
-              project.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              project.description.toLowerCase().contains(
-                _searchQuery.toLowerCase(),
-              ),
-        )
-        .toList();
+  List<Project> _filteredProjects(List<Project> projects) {
+    if (_searchQuery.isEmpty) return projects;
+    return projects.where((project) {
+      final query = _searchQuery.toLowerCase();
+      return project.name.toLowerCase().contains(query) ||
+          project.description.toLowerCase().contains(query);
+    }).toList();
   }
 
   // Safe opacity getter that clamps values between 0 and 1
@@ -291,30 +282,47 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${filteredProjects.length} Projects',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    'Sorted by: Recent',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                  ),
-                ],
+              child: FutureBuilder<List<Project>>(
+                future: _projectsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No projects found'));
+                  }
+
+                  final projects = _filteredProjects(snapshot.data!);
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${projects.length} Projects',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        'Sorted by: Recent',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),
 
           // Projects Grid/List
           isWideScreen
-              ? _buildWideScreenGrid(filteredProjects)
-              : _buildMobileList(filteredProjects),
+              ? _buildWideScreenGrid()
+              :
+          _buildMobileList(),
 
           SliverToBoxAdapter(child: const SizedBox(height: 100)),
         ],
@@ -340,33 +348,70 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     );
   }
 
-  Widget _buildWideScreenGrid(List<Project> projects) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 20,
-          mainAxisSpacing: 20,
-          childAspectRatio: 1.6,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => _buildProjectCard(projects[index], index),
-          childCount: projects.length,
-        ),
-      ),
+  Widget _buildWideScreenGrid() {
+    return FutureBuilder<List<Project>>(
+      future: _projectsFuture,
+      builder: (BuildContext context, AsyncSnapshot<List<Project>> snapshot) {
+        if (snapshot.hasError) {
+          return SliverToBoxAdapter(
+            child: Center(child: Text('Error: ${snapshot.error}')),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Center(child: Text('No projects found')),
+          );
+        }
+
+        final projects = snapshot.data!;
+        final filteredProjects = _filteredProjects(projects);
+
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+              childAspectRatio: 1.6,
+            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final project = filteredProjects[index];
+
+              return _buildProjectCard(project, index);
+            }, childCount: filteredProjects.length),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildMobileList(List<Project> projects) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-          child: _buildProjectCard(projects[index], index),
-        ),
-        childCount: projects.length,
-      ),
+  Widget _buildMobileList() {
+    return FutureBuilder<List<Project>>(
+      future: _projectsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return SliverToBoxAdapter(
+            child: Center(child: Text('Error: ${snapshot.error}')),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Center(child: Text('No projects found')),
+          );
+        }
+
+        final projects = snapshot.data!;
+        final filteredProjects = _filteredProjects(projects);
+
+        return SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final project = filteredProjects[index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: _buildProjectCard(project, index),
+            );
+          }, childCount: filteredProjects.length),
+        );
+      },
     );
   }
 
@@ -382,7 +427,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       builder: (context, child) {
         final safeOpacity = _getSafeOpacity(_staggerAnimations[animationIndex]);
         final safeScale = _getSafeScale(_staggerAnimations[animationIndex]);
-
         return Opacity(
           opacity: safeOpacity,
           child: Transform(
@@ -709,14 +753,20 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     );
   }
 
-  void _navigateToAddProject() {
-    Navigator.push(
+  Future<void> _navigateToAddProject() async {
+    final newProject = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const AddProjectScreen(),
         fullscreenDialog: true,
       ),
     );
+
+    if (newProject != null) {
+      setState(() {
+        _projectsFuture = getProjects();
+      });
+    }
   }
 
   void _navigateToProjectDetail(String projectId) {
@@ -749,6 +799,46 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         return const Color(0xFF7B1FA2);
       default:
         return Colors.grey;
+    }
+  }
+
+  Future<List<Project>> getProjects() async {
+    var url = Uri.parse(
+      "https://prakrutitech.xyz/batch_project/view_project.php",
+    );
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      print("Get project api working! ${response.body.toString()}");
+      final jsonResponse = jsonDecode(response.body);
+
+      final List<dynamic> projectsJson = jsonResponse['projects'] ?? [];
+
+      // Convert to list of Project objects
+      final List<Project> projects = projectsJson
+          .map((json) => Project.fromJson(json))
+          .toList();
+
+      setState(() {
+        _staggerAnimations = List.generate(
+          projects.length,
+          (index) => Tween<double>(begin: 0, end: 1).animate(
+            CurvedAnimation(
+              parent: _animationController,
+              curve: Interval(
+                0.2 + (0.15 * index),
+                1.0,
+                curve: Curves.elasticOut,
+              ),
+            ),
+          ),
+        );
+      });
+
+      return projects;
+    } else {
+      print("Get project api not working!!");
+      return [];
     }
   }
 }

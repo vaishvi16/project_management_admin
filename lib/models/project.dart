@@ -2,6 +2,7 @@
 class Project {
   final String id;
   final String name;
+  final String title;
   final String description;
   final String type;
   final List<String> members;
@@ -13,6 +14,7 @@ class Project {
   Project({
     required this.id,
     required this.name,
+    required this.title,
     required this.description,
     required this.type,
     required this.members,
@@ -21,4 +23,21 @@ class Project {
     required this.progress,
     required this.status,
   });
+
+  factory Project.fromJson(Map<String, dynamic> json) {
+    return Project(
+      id: json['id'] ?? '',
+      name: json['client_name'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      type: json['type'] ?? '',
+      status: json['status'] ?? '',
+      members: (json['members_names'] != null)
+          ? json['members_names'].toString().split(',').map((e) => e.trim()).toList()
+          : [],
+      startDate: DateTime.tryParse(json['start_date'] ?? '') ?? DateTime.now(),
+      endDate: DateTime.tryParse(json['end_date'] ?? '') ?? DateTime.now(),
+      progress: 0.0,
+    );
+  }
 }

@@ -23,7 +23,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
 
-  static const List<String> _types = ['Web', 'Mobile', 'Desktop'];
+  static const List<String> _types = ['Web', 'Mobile Application', 'Tester'];
 
   @override
   Widget build(BuildContext context) {
@@ -494,20 +494,20 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         return;
       }
 
-      // Create Project object
       final newProject = Project(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text,
+        name: _clientController.text.toString(),
+        title: _nameController.text,
         description: _descController.text,
-        type: _selectedType!,
+        type: _selectedType ?? ' ',
         members: _members,
         startDate: _startDate!,
         endDate: _endDate!,
         progress: 0.0,
-        status: 'pending',
+        status: 'Pending',
       );
 
-      _insertProject();
+      _insertProject(newProject);
 
       // Simulate save and return
       Navigator.pop(context, newProject);
@@ -531,21 +531,21 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     super.dispose();
   }
 
-  Future<void> _insertProject() async {
+  Future<void> _insertProject(Project project ) async {
     var url = Uri.parse(
       "https://prakrutitech.xyz/batch_project/insert_project.php",
     );
    var response = await http.post(
       url,
       body: {
-        "client_name": _clientController.text.toString(),
-        "title": _nameController.text.toString(),
-        "description": _descController.text.toString(),
-        "type": _selectedType.toString(),
+        "client_name": project.name,
+        "title":project.title,
+        "description": project.description,
+        "type": project.type,
         "status": "Pending",
-        "members_name": _membersController.text.toString(),
-        "start_date": _startDate.toString(),
-        "end_date": _endDate.toString(),
+        "members_names": project.members.join(', '),
+        "start_date": project.startDate.toIso8601String(),
+        "end_date": project.endDate.toIso8601String(),
       },
     );
 
