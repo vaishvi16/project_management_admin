@@ -825,7 +825,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     ).then((value) {
       if (value != null) {
         setState(() {
-          _projectsFuture = getProjects();
+          _projectsFuture = getProjects(); // Refresh the project list
         });
       }
     });
@@ -843,17 +843,20 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   }
 
   Color _getStatusColor(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'onhold':
-        return const Color(0xFFF57C00);
+      case 'on hold':
+        return const Color(0xFFF57C00); // Orange
       case 'continue':
-        return const Color(0xFF1976D2);
+      case 'in progress':
+        return const Color(0xFF1976D2); // Blue
       case 'pending':
-        return const Color(0xFFFFA000);
+        return const Color(0xFFFFA000); // Amber
       case 'complete':
-        return const Color(0xFF388E3C);
+      case 'completed':
+        return const Color(0xFF388E3C); // Green
       case 'approved':
-        return const Color(0xFF7B1FA2);
+        return const Color(0xFF7B1FA2); // Purple
       default:
         return Colors.grey;
     }

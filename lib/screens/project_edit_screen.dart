@@ -26,6 +26,27 @@ class _ProjectEditScreenState extends State<ProjectEditScreen> {
   DateTime? _endDate;
   double _progress = 0.0;
 
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'onhold':
+      case 'on hold':
+        return const Color(0xFFF57C00); // Orange
+      case 'continue':
+      case 'in progress':
+        return const Color(0xFF1976D2); // Blue
+      case 'pending':
+        return const Color(0xFFFFA000); // Amber
+      case 'complete':
+      case 'completed':
+        return const Color(0xFF388E3C); // Green
+      case 'approved':
+        return const Color(0xFF7B1FA2); // Purple
+      default:
+        return Colors.grey;
+    }
+  }
+
+
   static const List<String> _types = ['Web', 'Mobile Application', 'Tester'];
   static const List<String> _statuses = ['Pending', 'Continue', 'On Hold', 'Complete', 'Approved'];
 
@@ -360,9 +381,22 @@ class _ProjectEditScreenState extends State<ProjectEditScreen> {
           .map(
             (status) => DropdownMenuItem(
           value: status,
-          child: Text(
-            status,
-            style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+          child: Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: _getStatusColor(status),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                status,
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+              ),
+            ],
           ),
         ),
       )
@@ -629,9 +663,10 @@ class _ProjectEditScreenState extends State<ProjectEditScreen> {
         status: _selectedStatus ?? 'Pending',
       );
 
-      // Here you would typically call your update API
+      // Update project in database
       _updateProjectInDatabase(updatedProject);
 
+      // Return the updated project to the previous screen
       Navigator.pop(context, updatedProject);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -645,30 +680,32 @@ class _ProjectEditScreenState extends State<ProjectEditScreen> {
   }
 
   Future<void> _updateProjectInDatabase(Project project) async {
-    // Implement your update API call here
-    print('Updating project: ${project.id}');
-    // var url = Uri.parse("https://prakrutitech.xyz/batch_project/update_project.php");
-    // var response = await http.post(
-    //   url,
-    //   body: {
-    //     "id": project.id,
-    //     "client_name": project.name,
-    //     "title": project.title,
-    //     "description": project.description,
-    //     "type": project.type,
-    //     "status": project.status,
-    //     "progress": project.progress.toString(),
-    //     "members_names": project.members.join(', '),
-    //     "start_date": project.startDate.toIso8601String(),
-    //     "end_date": project.endDate.toIso8601String(),
-    //   },
-    // );
+    try {
+      var url = Uri.parse("https://prakrutitech.xyz/batch_project/update_project.php");
+      var response = await http.post(
+        url,
+        body: {
+          "id": project.id,
+          "client_name": project.name,
+          "title": project.title,
+          "description": project.description,
+          "type": project.type,
+          "status": project.status,
+          "progress": project.progress.toString(),
+          "members_names": project.members.join(', '),
+          "start_date": project.startDate.toIso8601String(),
+          "end_date": project.endDate.toIso8601String(),
+        },
+      );
 
-    // if(response.statusCode == 200){
-    //   print("Project updated successfully! ${response.body}");
-    // } else {
-    //   print("Failed to update project");
-    // }
+      if(response.statusCode == 200){
+        print("Project updated successfully! ${response.body}");
+      } else {
+        print("Failed to update project");
+      }
+    } catch (e) {
+      print("Error updating project: $e");
+    }
   }
 
   @override
