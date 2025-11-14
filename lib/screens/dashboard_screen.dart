@@ -21,59 +21,12 @@ class _DashboardScreenState extends State<DashboardScreen>
   bool _expanded = false;
 
   // Demo data
-  static final List<Map<String, dynamic>> _logs = [
-    {
-      'id': '1',
-      'project': 'Alpha',
-      'progress': 0.7,
-      'status': 'continue',
-      'details': 'Updated UI components and implemented new features',
-      'time': '2 hours ago',
-      'user': 'Alex Johnson'
-    },
-    {
-      'id': '2',
-      'project': 'Beta',
-      'progress': 0.4,
-      'status': 'pending',
-      'details': 'Waiting for client approval on design mockups',
-      'time': '5 hours ago',
-      'user': 'Sarah Chen'
-    },
-    {
-      'id': '3',
-      'project': 'Gamma',
-      'progress': 0.9,
-      'status': 'approved',
-      'details': 'Final testing completed successfully',
-      'time': '1 day ago',
-      'user': 'Mike Rodriguez'
-    },
-    {
-      'id': '4',
-      'project': 'Delta',
-      'progress': 0.6,
-      'status': 'continue',
-      'details': 'Backend API integration in progress',
-      'time': '2 days ago',
-      'user': 'Emily Watson'
-    },
-  ];
-
-  static final Map<String, int> _statusCounts = {
-    'onhold': 2,
-    'continue': 5,
-    'pending': 3,
-    'complete': 4,
-    'approved': 2,
-  };
-
   static final Map<String, dynamic> _stats = {
     'totalProjects': 16,
     'completed': 4,
     'inProgress': 7,
+    'onHold': 3,
     'teamMembers': 12,
-    'efficiency': 78,
   };
 
   @override
@@ -187,10 +140,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 // Quick Actions
                 _buildQuickActions(),
                 const SizedBox(height: 24),
-
-                // Activity Logs
-                _buildActivityLogs(),
-                const SizedBox(height: 24), // Extra bottom padding
               ]),
             ),
           ),
@@ -317,11 +266,11 @@ class _DashboardScreenState extends State<DashboardScreen>
         'change': '+8%',
       },
       {
-        'title': 'Team Efficiency',
-        'value': '${_stats['efficiency']}%',
-        'icon': Icons.bolt,
-        'color': const Color(0xFF7B1FA2), // Purple
-        'change': '+3%',
+        'title': 'On Hold',
+        'value': _stats['onHold'].toString(),
+        'icon': Icons.pause_circle,
+        'color': const Color(0xFFF44336), // Red
+        'change': '+2%',
       },
     ];
 
@@ -447,6 +396,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         'color': const Color(0xFF388E3C), // Green
         'onTap': _navigateToAddUser,
       },
+      {
+        'title': 'View Users',
+        'icon': Icons.people,
+        'color': const Color(0xFF7B1FA2), // Purple
+        'onTap': _navigateToViewUsers,
+      },
     ];
 
     return Column(
@@ -519,227 +474,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildActivityLogs() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Header
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => setState(() => _expanded = !_expanded),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: _expanded
-                        ? BorderSide(color: Colors.grey.shade200)
-                        : BorderSide.none,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Recent Activity',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Latest project updates',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    AnimatedRotation(
-                      turns: _expanded ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Icon(
-                        Icons.expand_more,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Logs List
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            child: _expanded
-                ? Column(
-              children: _logs.map((log) => _buildLogItem(log)).toList(),
-            )
-                : const SizedBox.shrink(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLogItem(Map<String, dynamic> log) {
-    final statusColor = _getStatusColor(log['status']);
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey.shade100,
-            width: 1,
-          ),
-        ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        leading: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: statusColor.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              CircularProgressIndicator(
-                value: log['progress'],
-                strokeWidth: 2,
-                backgroundColor: Colors.grey.shade200,
-                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-              ),
-              Text(
-                '${(log['progress'] * 100).toInt()}',
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                  color: statusColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-        title: Text(
-          '${log['project']} • ${log['user']}',
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 2),
-            Text(
-              log['details'],
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade700,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              log['time'],
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade500,
-              ),
-            ),
-          ],
-        ),
-        trailing: PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert, color: Colors.grey.shade500, size: 20),
-          onSelected: (value) => _handleLogAction(value, log),
-          itemBuilder: (context) => [
-            const PopupMenuItem(value: 'view', child: Text('View Details')),
-            const PopupMenuItem(value: 'edit', child: Text('Edit Log')),
-            const PopupMenuDivider(),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text(
-                'Delete',
-                style: TextStyle(color: Colors.red.shade600),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'onhold':
-        return const Color(0xFFF57C00);
-      case 'continue':
-        return const Color(0xFF1976D2);
-      case 'pending':
-        return const Color(0xFFFFA000);
-      case 'complete':
-        return const Color(0xFF388E3C);
-      case 'approved':
-        return const Color(0xFF7B1FA2);
-      default:
-        return Colors.grey;
-    }
-  }
-
-  void _handleLogAction(String action, Map<String, dynamic> log) {
-    switch (action) {
-      case 'view':
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Viewing ${log['project']} details'),
-            backgroundColor: const Color(0xFF1976D2),
-          ),
-        );
-        break;
-      case 'edit':
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Editing ${log['project']} log'),
-            backgroundColor: const Color(0xFFF57C00),
-          ),
-        );
-        break;
-      case 'delete':
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Deleted ${log['project']} log'),
-            backgroundColor: Colors.red.shade600,
-          ),
-        );
-        break;
-    }
-  }
-
   void _navigateToHistory() {
     Navigator.push(
       context,
@@ -758,6 +492,16 @@ class _DashboardScreenState extends State<DashboardScreen>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AddUserScreen()),
+    );
+  }
+
+  void _navigateToViewUsers() {
+    // You can replace this with your actual View Users screen
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Navigate to View Users screen'),
+        backgroundColor: const Color(0xFF7B1FA2),
+      ),
     );
   }
 

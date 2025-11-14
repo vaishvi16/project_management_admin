@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import '../models/project.dart';
 import 'add_project_screen.dart';
 import 'dashboard_screen.dart';
+import 'project_view_detail_screen.dart';
+import 'project_edit_screen.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
   const ProjectDetailsScreen({super.key});
@@ -19,7 +21,6 @@ class ProjectDetailsScreen extends StatefulWidget {
 class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
-  late AnimationController _pulseController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late List<Animation<double>> _staggerAnimations;
@@ -37,11 +38,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     // Initialize controllers first
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
 
@@ -66,7 +62,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     // Start animations after frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _animationController.forward();
-      _pulseController.repeat(reverse: true);
     });
 
     _projectsFuture = getProjects();
@@ -81,7 +76,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   @override
   void dispose() {
     _animationController.dispose();
-    _pulseController.dispose();
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -103,10 +97,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
   // Safe scale getter that prevents invalid values
   double _getSafeScale(Animation<double> animation) {
-    return animation.value.clamp(
-      0.01,
-      1.0,
-    ); // Minimum scale of 0.01 to avoid invisible elements
+    return animation.value.clamp(0.01, 1.0);
   }
 
   @override
@@ -140,10 +131,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
             gradient: _scrollOffset > 100
                 ? null
                 : const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
-                  ),
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
+            ),
           ),
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -222,20 +213,19 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
                         // Search Bar
                         SlideTransition(
-                          position:
-                              Tween<Offset>(
-                                begin: const Offset(0, 0.5),
-                                end: Offset.zero,
-                              ).animate(
-                                CurvedAnimation(
-                                  parent: _animationController,
-                                  curve: const Interval(
-                                    0.5,
-                                    1,
-                                    curve: Curves.easeOut,
-                                  ),
-                                ),
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.5),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: _animationController,
+                              curve: const Interval(
+                                0.5,
+                                1,
+                                curve: Curves.easeOut,
                               ),
+                            ),
+                          ),
                           child: FadeTransition(
                             opacity: _fadeAnimation,
                             child: Container(
@@ -321,8 +311,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           // Projects Grid/List
           isWideScreen
               ? _buildWideScreenGrid()
-              :
-          _buildMobileList(),
+              : _buildMobileList(),
 
           SliverToBoxAdapter(child: const SizedBox(height: 100)),
         ],
@@ -376,7 +365,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
             ),
             delegate: SliverChildBuilderDelegate((context, index) {
               final project = filteredProjects[index];
-
               return _buildProjectCard(project, index);
             }, childCount: filteredProjects.length),
           ),
@@ -419,61 +407,44 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     final statusColor = _getStatusColor(project.status);
     final daysRemaining = project.endDate.difference(DateTime.now()).inDays;
 
-    // Use safe animation values
-    final animationIndex = index % _staggerAnimations.length;
-
     return AnimatedBuilder(
-      animation: _staggerAnimations[animationIndex],
+      animation: _animationController,
       builder: (context, child) {
-        final safeOpacity = _getSafeOpacity(_staggerAnimations[animationIndex]);
-        final safeScale = _getSafeScale(_staggerAnimations[animationIndex]);
-        return Opacity(
-          opacity: safeOpacity,
-          child: Transform(
-            transform: Matrix4.identity()
-              ..scale(safeScale)
-              ..translate(0.0, 100 * (1 - safeOpacity)),
-            alignment: Alignment.center,
-            child: child,
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        );
-      },
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: () => _onCardTap(project.id),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                // Status Indicator Bar
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 4,
-                    decoration: BoxDecoration(
-                      color: statusColor,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        bottomLeft: Radius.circular(20),
-                      ),
+          child: Stack(
+            children: [
+              // Status Indicator Bar
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      bottomLeft: Radius.circular(20),
                     ),
                   ),
                 ),
+              ),
 
-                Padding(
+              // Main card content
+              GestureDetector(
+                onTap: () => _navigateToProjectDetail(project),
+                child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,7 +479,17 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                               ],
                             ),
                           ),
-                          _buildStatusBadge(project.status, statusColor),
+                          Row(
+                            children: [
+                              _buildStatusBadge(project.status, statusColor),
+                              const SizedBox(width: 8),
+                              // Placeholder for menu icon
+                              Container(
+                                width: 24,
+                                height: 24,
+                              ),
+                            ],
+                          ),
                         ],
                       ),
 
@@ -569,8 +550,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                                     duration: const Duration(milliseconds: 800),
                                     curve: Curves.easeOut,
                                     height: 6,
-                                    width:
-                                        constraints.maxWidth * project.progress,
+                                    width: constraints.maxWidth * project.progress,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
@@ -641,23 +621,42 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                     ],
                   ),
                 ),
+              ),
 
-                // Hover overlay
-                Positioned.fill(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => _onCardTap(project.id),
-                      child: Container(),
+              // Menu button - completely separate from the card's GestureDetector
+              Positioned(
+                top: 16,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    _showProjectMenu(context, project);
+                  },
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.more_vert,
+                      color: Colors.grey.shade600,
+                      size: 20,
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -726,9 +725,48 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     );
   }
 
-  void _onCardTap(String projectId) {
-    HapticFeedback.lightImpact();
-    _navigateToProjectDetail(projectId);
+  void _showProjectMenu(BuildContext context, Project project) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(Offset.zero, ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu<String>(
+      context: context,
+      position: position,
+      items: [
+        PopupMenuItem<String>(
+          value: 'view',
+          child: Row(
+            children: const [
+              Icon(Icons.visibility, size: 18),
+              SizedBox(width: 8),
+              Text('View Detail'),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'edit',
+          child: Row(
+            children: const [
+              Icon(Icons.edit, size: 18),
+              SizedBox(width: 8),
+              Text('Edit'),
+            ],
+          ),
+        ),
+      ],
+      elevation: 8,
+    ).then((value) {
+      if (value != null) {
+        _handleMenuAction(value, project);
+      }
+    });
   }
 
   void _navigateToDashboard() {
@@ -736,16 +774,16 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const DashboardScreen(),
+        const DashboardScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
                 .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeInOutCubic,
-                  ),
-                ),
+              CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeInOutCubic,
+              ),
+            ),
             child: child,
           );
         },
@@ -769,34 +807,56 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     }
   }
 
-  void _navigateToProjectDetail(String projectId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Project Detail'),
-        content: Text('Details for project $projectId'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
+  void _navigateToProjectDetail(Project project) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProjectViewDetailScreen(project: project),
       ),
     );
   }
 
+  void _navigateToEditProject(Project project) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProjectEditScreen(project: project),
+      ),
+    ).then((value) {
+      if (value != null) {
+        setState(() {
+          _projectsFuture = getProjects(); // Refresh the project list
+        });
+      }
+    });
+  }
+
+  void _handleMenuAction(String action, Project project) {
+    switch (action) {
+      case 'view':
+        _navigateToProjectDetail(project);
+        break;
+      case 'edit':
+        _navigateToEditProject(project);
+        break;
+    }
+  }
+
   Color _getStatusColor(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'onhold':
-        return const Color(0xFFF57C00);
+      case 'on hold':
+        return const Color(0xFFF57C00); // Orange
       case 'continue':
-        return const Color(0xFF1976D2);
+      case 'in progress':
+        return const Color(0xFF1976D2); // Blue
       case 'pending':
-        return const Color(0xFFFFA000);
+        return const Color(0xFFFFA000); // Amber
       case 'complete':
-        return const Color(0xFF388E3C);
+      case 'completed':
+        return const Color(0xFF388E3C); // Green
       case 'approved':
-        return const Color(0xFF7B1FA2);
+        return const Color(0xFF7B1FA2); // Purple
       default:
         return Colors.grey;
     }
@@ -822,7 +882,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       setState(() {
         _staggerAnimations = List.generate(
           projects.length,
-          (index) => Tween<double>(begin: 0, end: 1).animate(
+              (index) => Tween<double>(begin: 0, end: 1).animate(
             CurvedAnimation(
               parent: _animationController,
               curve: Interval(
