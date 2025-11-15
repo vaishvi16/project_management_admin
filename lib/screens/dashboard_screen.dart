@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../models/project.dart';
 import 'add_user_screen.dart';
 import 'add_project_screen.dart';
+import 'all_user_screen.dart';
 import 'history_screen.dart';
 import 'project_details_screen.dart';
 
@@ -538,18 +539,17 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   void _navigateToViewUsers() {
     // You can replace this with your actual View Users screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Navigate to View Users screen'),
-        backgroundColor: const Color(0xFF7B1FA2),
-      ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AllUserScreen()),
     );
   }
 
   void _navigateToProjects() {
-    Navigator.push(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const ProjectDetailsScreen()),
+          (route) => false,
     );
   }
 }
