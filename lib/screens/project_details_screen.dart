@@ -347,7 +347,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const SliverToBoxAdapter(
-            child: Center(child: Text('No projects found')),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -383,7 +383,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const SliverToBoxAdapter(
-            child: Center(child: Text('No projects found')),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -458,7 +458,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  project.name,
+                                  project.title,
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
