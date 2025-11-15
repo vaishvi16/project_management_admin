@@ -383,7 +383,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     return DropdownButtonFormField<String>(
       value: _selectedDesigner,
       decoration: InputDecoration(
-        labelText: 'Designer User',
+        labelText: 'Designer',
         labelStyle: TextStyle(color: Colors.grey.shade600),
         prefixIcon: Icon(Icons.brush, color: Colors.grey.shade500),
         border: OutlineInputBorder(
@@ -441,7 +441,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     return DropdownButtonFormField<String>(
       value: _selectedDeveloper,
       decoration: InputDecoration(
-        labelText: 'Developer User',
+        labelText: 'Developer',
         labelStyle: TextStyle(color: Colors.grey.shade600),
         prefixIcon: Icon(Icons.code, color: Colors.grey.shade500),
         border: OutlineInputBorder(
@@ -499,7 +499,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     return DropdownButtonFormField<String>(
       value: _selectedTester,
       decoration: InputDecoration(
-        labelText: 'Tester User',
+        labelText: 'Tester',
         labelStyle: TextStyle(color: Colors.grey.shade600),
         prefixIcon: Icon(Icons.bug_report, color: Colors.grey.shade500),
         border: OutlineInputBorder(
@@ -557,7 +557,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     return DropdownButtonFormField<String>(
       value: _selectedBackend,
       decoration: InputDecoration(
-        labelText: 'Backend User',
+        labelText: 'Backend',
         labelStyle: TextStyle(color: Colors.grey.shade600),
         prefixIcon: Icon(Icons.cloud, color: Colors.grey.shade500),
         border: OutlineInputBorder(
@@ -902,7 +902,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         "description": project.description,
         "type": project.type,
         "status": "Pending",
-        "members_names": project.members.join(', '), // This will include all selected users
+        "members_names": project.members.join(', '),
         "start_date": project.startDate.toIso8601String(),
         "end_date": project.endDate.toIso8601String(),
       },

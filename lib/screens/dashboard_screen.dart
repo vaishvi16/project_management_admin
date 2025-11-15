@@ -538,7 +538,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _navigateToViewUsers() {
-    // You can replace this with your actual View Users screen
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AllUserScreen()),
