@@ -1,5 +1,8 @@
 // lib/screens/dashboard_screen.dart
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../models/project.dart';
 import 'add_user_screen.dart';
 import 'add_project_screen.dart';
@@ -20,12 +23,11 @@ class _DashboardScreenState extends State<DashboardScreen>
   late Animation<Offset> _slideAnimation;
   bool _expanded = false;
 
-  // Demo data
-  static final Map<String, dynamic> _stats = {
-    'totalProjects': 16,
-    'completed': 4,
-    'inProgress': 7,
-    'onHold': 3,
+  Map<String, int> _stats = {
+    'total_projects': 0,
+    'Complete': 0,
+    'Pending': 0,
+    'On Hold': 0,
     'teamMembers': 12,
   };
 
@@ -57,10 +59,41 @@ class _DashboardScreenState extends State<DashboardScreen>
     _animationController.forward();
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+  Future<int> _fetchProjectCount({String? status}) async {
+    try {
+      String url = "https://prakrutitech.xyz/batch_project/view_project.php";
+
+      if (status != null && status.isNotEmpty) {
+        url = "$url?status=$status";
+      }
+
+      final res = await http.get(Uri.parse(url));
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+
+        print("here is the data: $data");
+        return data['total_projects'] as int;      }
+      return 0;
+    } catch (e) {
+      print("API ERROR: $e");
+      return 0;
+    }
+  }
+
+  Future<Map<String, int>> _fetchAllStats() async {
+    final total = await _fetchProjectCount();
+    final Complete = await _fetchProjectCount(status: "Complete");
+    final OnHold = await _fetchProjectCount(status: "On Hold");
+    final Pending = await _fetchProjectCount(status: "Pending");
+
+    return {
+      'total_projects': total,
+      'Complete': Complete,
+      'Pending': Pending,
+      'On Hold': OnHold,
+      'teamMembers': 12,
+    };
   }
 
   @override
@@ -70,80 +103,96 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: CustomScrollView(
-        slivers: [
-          // App Bar
-          SliverAppBar(
-            expandedHeight: 120,
-            floating: false,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: SlideTransition(
-                position: _slideAnimation,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: const Text(
-                    'Dashboard',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      fontSize: 20,
+
+      body: FutureBuilder<Map<String, int>>(
+        future: _fetchAllStats(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.blue),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(child: Text("Failed to load stats"));
+          }
+
+          // Update stats for UI
+          _stats = snapshot.data!;
+
+          return CustomScrollView(
+            slivers: [
+              // App Bar
+              SliverAppBar(
+                expandedHeight: 120,
+                floating: false,
+                pinned: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: SlideTransition(
+                    position: _slideAnimation,
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: const Text(
+                        'Dashboard',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  background: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF1976D2),
+                          Color(0xFF7B1FA2),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF1976D2), // Blue 700
-                      Color(0xFF7B1FA2), // Purple 600
-                    ],
+                actions: [
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.history,
+                          color: Colors.white, size: 20),
+                    ),
+                    onPressed: _navigateToHistory,
                   ),
+                  const SizedBox(width: 8),
+                ],
+              ),
+
+              // Dashboard Content
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildWelcomeSection(),
+                    const SizedBox(height: 24),
+
+                    _buildStatsGrid(),
+                    const SizedBox(height: 24),
+
+                    const SizedBox(height: 24),
+
+                    _buildQuickActions(),
+                    const SizedBox(height: 24),
+                  ]),
                 ),
               ),
-            ),
-            actions: [
-              IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.history, color: Colors.white, size: 20),
-                ),
-                onPressed: _navigateToHistory,
-              ),
-              const SizedBox(width: 8),
             ],
-          ),
-
-          // Dashboard Content
-          SliverPadding(
-            padding: const EdgeInsets.all(16), // Reduced padding to prevent overflow
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // Welcome Section
-                _buildWelcomeSection(),
-                const SizedBox(height: 24),
-
-                // Stats Grid
-                _buildStatsGrid(),
-                const SizedBox(height: 24),
-
-                // Charts Section - Removed charts, keeping the space
-                const SizedBox(height: 24),
-
-                // Quick Actions
-                _buildQuickActions(),
-                const SizedBox(height: 24),
-              ]),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -185,8 +234,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'You have ${_stats['inProgress']} projects in progress. '
-                          '${_stats['completed']} completed this month.',
+                      'You have ${_stats['Pending']} projects in progress. '
+                          '${_stats['Complete']} completed!',
                       style: TextStyle(
                         fontSize: 14, // Smaller font
                         color: Colors.grey.shade700,
@@ -246,28 +295,28 @@ class _DashboardScreenState extends State<DashboardScreen>
     final stats = [
       {
         'title': 'Total Projects',
-        'value': _stats['totalProjects'].toString(),
+        'value': _stats['total_projects'],
         'icon': Icons.assignment,
         'color': const Color(0xFF1976D2), // Blue
         'change': '+12%',
       },
       {
         'title': 'In Progress',
-        'value': _stats['inProgress'].toString(),
+        'value': _stats['Pending'],
         'icon': Icons.trending_up,
         'color': const Color(0xFFF57C00), // Orange
         'change': '+5%',
       },
       {
         'title': 'Completed',
-        'value': _stats['completed'].toString(),
+        'value': _stats['Complete'],
         'icon': Icons.check_circle,
         'color': const Color(0xFF388E3C), // Green
         'change': '+8%',
       },
       {
         'title': 'On Hold',
-        'value': _stats['onHold'].toString(),
+        'value': _stats['On Hold'],
         'icon': Icons.pause_circle,
         'color': const Color(0xFFF44336), // Red
         'change': '+2%',
@@ -340,21 +389,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                             size: 18,
                           ),
                         ),
-                        Text(
-                          stat['change'] as String,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF388E3C), // Green
-                          ),
-                        ),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          stat['value'] as String,
+                          stat['value'].toString(),
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -363,7 +404,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          stat['title'] as String,
+                          stat['title'].toString(),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade600,
