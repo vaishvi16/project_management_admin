@@ -452,6 +452,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                       // Header Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: Column(
@@ -464,8 +465,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                                     fontWeight: FontWeight.w700,
                                     color: Colors.black87,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: null,
+                                  //overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
@@ -482,7 +483,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                           Row(
                             children: [
                               _buildStatusBadge(project.status, statusColor),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 18),
                               // Placeholder for menu icon
                               Container(
                                 width: 24,
@@ -503,7 +504,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                           color: Colors.grey.shade700,
                           height: 1.4,
                         ),
-                        maxLines: 2,
+                        maxLines: null,
                         overflow: TextOverflow.ellipsis,
                       ),
 
