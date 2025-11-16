@@ -131,10 +131,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
             gradient: _scrollOffset > 100
                 ? null
                 : const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
-            ),
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
+                  ),
           ),
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -143,11 +143,16 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
             icon: const Icon(Icons.dashboard, color: Colors.white),
             onPressed: _navigateToDashboard,
           ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () {},
+          ),
           const SizedBox(width: 8),
         ],
       ),
       body: CustomScrollView(
         controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           // Hero Section
           SliverToBoxAdapter(
@@ -213,19 +218,20 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
                         // Search Bar
                         SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, 0.5),
-                            end: Offset.zero,
-                          ).animate(
-                            CurvedAnimation(
-                              parent: _animationController,
-                              curve: const Interval(
-                                0.5,
-                                1,
-                                curve: Curves.easeOut,
+                          position:
+                              Tween<Offset>(
+                                begin: const Offset(0, 0.5),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: _animationController,
+                                  curve: const Interval(
+                                    0.5,
+                                    1,
+                                    curve: Curves.easeOut,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
                           child: FadeTransition(
                             opacity: _fadeAnimation,
                             child: Container(
@@ -309,9 +315,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           ),
 
           // Projects Grid/List
-          isWideScreen
-              ? _buildWideScreenGrid()
-              : _buildMobileList(),
+          isWideScreen ? _buildWideScreenGrid() : _buildMobileList(),
 
           SliverToBoxAdapter(child: const SizedBox(height: 100)),
         ],
@@ -485,10 +489,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                               _buildStatusBadge(project.status, statusColor),
                               const SizedBox(width: 18),
                               // Placeholder for menu icon
-                              Container(
-                                width: 24,
-                                height: 24,
-                              ),
+                              Container(width: 24, height: 24),
                             ],
                           ),
                         ],
@@ -551,7 +552,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                                     duration: const Duration(milliseconds: 800),
                                     curve: Curves.easeOut,
                                     height: 6,
-                                    width: constraints.maxWidth * project.progress,
+                                    width:
+                                        constraints.maxWidth * project.progress,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
@@ -728,11 +730,15 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
   void _showProjectMenu(BuildContext context, Project project) {
     final RenderBox button = context.findRenderObject() as RenderBox;
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
         button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+        button.localToGlobal(
+          button.size.bottomRight(Offset.zero),
+          ancestor: overlay,
+        ),
       ),
       Offset.zero & overlay.size,
     );
@@ -775,16 +781,16 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-        const DashboardScreen(),
+            const DashboardScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
                 .animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeInOutCubic,
-              ),
-            ),
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOutCubic,
+                  ),
+                ),
             child: child,
           );
         },
@@ -883,7 +889,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       setState(() {
         _staggerAnimations = List.generate(
           projects.length,
-              (index) => Tween<double>(begin: 0, end: 1).animate(
+          (index) => Tween<double>(begin: 0, end: 1).animate(
             CurvedAnimation(
               parent: _animationController,
               curve: Interval(

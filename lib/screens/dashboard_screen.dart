@@ -125,10 +125,16 @@ class _DashboardScreenState extends State<DashboardScreen>
             slivers: [
               // App Bar
               SliverAppBar(
-                expandedHeight: 120,
+                automaticallyImplyLeading: false,
+                expandedHeight: 20, // 120 hti je me 20 kari che
                 floating: false,
                 pinned: true,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
                 flexibleSpace: FlexibleSpaceBar(
+                  centerTitle: true,
                   title: SlideTransition(
                     position: _slideAnimation,
                     child: FadeTransition(
