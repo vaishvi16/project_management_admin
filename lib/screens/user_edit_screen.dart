@@ -8,8 +8,9 @@ import 'package:http/http.dart' as http;
 import '../models/project.dart';
 
 class UserEditScreen extends StatefulWidget {
-  final dynamic user;
-  const UserEditScreen({super.key, this.user});
+  var id;
+  var user;
+  UserEditScreen({required this.id, required this.user});
 
   @override
   State<UserEditScreen> createState() => _UserEditScreenState();
@@ -27,7 +28,21 @@ class _UserEditScreenState extends State<UserEditScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  static const List<String> _roles = ['Designer', 'Web Developer', 'App Developer', 'Tester', 'Backend'];
+  static const List<String> _roles = [
+    'Designer',
+    'Web Developer',
+    'App Developer',
+    'Tester',
+    'Backend'
+  ];
+
+  @override
+  void initState() {
+    _nameController.text = widget.user['name'];
+    _emailController.text = widget.user['email'];
+    _selectedRole = widget.user['role'];
+    _contactController.text = widget.user['phone_number'];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +58,9 @@ class _UserEditScreenState extends State<UserEditScreen> {
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Theme
+            .of(context)
+            .primaryColor,
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -66,13 +83,18 @@ class _UserEditScreenState extends State<UserEditScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color: Theme
+                        .of(context)
+                        .primaryColor
+                        .withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.person_add_alt_1,
                     size: 40,
-                    color: Theme.of(context).primaryColor,
+                    color: Theme
+                        .of(context)
+                        .primaryColor,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -108,7 +130,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
                     ],
                   ),
                   child: Padding(
-                    padding:  EdgeInsets.all(24),
+                    padding: EdgeInsets.all(24),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -117,16 +139,20 @@ class _UserEditScreenState extends State<UserEditScreen> {
                             controller: _nameController,
                             label: 'Full Name',
                             icon: Icons.person_outline,
-                            validator: (value) => value?.isEmpty ?? true ? 'Please enter name' : null,
+                            validator: (value) =>
+                            value?.isEmpty ?? true
+                                ? 'Please enter name'
+                                : null,
                           ),
-                           SizedBox(height: 20),
+                          SizedBox(height: 20),
                           _buildTextField(
                             controller: _emailController,
                             label: 'Email Address',
                             icon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
-                              if (value?.isEmpty ?? true) return 'Please enter email';
+                              if (value?.isEmpty ?? true)
+                                return 'Please enter email';
 
                               final emailRegex = RegExp(
                                   r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -139,14 +165,15 @@ class _UserEditScreenState extends State<UserEditScreen> {
                               return null;
                             },
                           ),
-                           SizedBox(height: 20),
+                          SizedBox(height: 20),
                           _buildTextField(
                             controller: _contactController,
                             label: 'Mobile Number',
                             icon: Icons.phone_android_outlined,
                             keyboardType: TextInputType.phone,
                             validator: (value) {
-                              if (value?.isEmpty ?? true) return 'Please enter mobile number';
+                              if (value?.isEmpty ?? true)
+                                return 'Please enter mobile number';
 
                               if (value!.length != 10) {
                                 return 'Mobile number must be 10 digits';
@@ -159,17 +186,21 @@ class _UserEditScreenState extends State<UserEditScreen> {
                               return null;
                             },
                           ),
-                           SizedBox(height: 20),
+                          SizedBox(height: 20),
                           _buildTextField(
                             controller: _passwordController,
                             label: 'Password',
                             icon: Icons.lock_outline,
                             obscureText: _obscurePassword,
-                            onToggleObscureText: () => setState(() => _obscurePassword = !_obscurePassword),
+                            onToggleObscureText: () =>
+                                setState(() =>
+                            _obscurePassword = !_obscurePassword),
                             isPassword: true,
                             validator: (value) {
-                              if (value?.isEmpty ?? true) return 'Please enter password';
-                              if (value!.length < 6) return 'Password must be at least 6 characters';
+                              if (value?.isEmpty ?? true)
+                                return 'Please enter password';
+                              if (value!.length < 6)
+                                return 'Password must be at least 6 characters';
                               return null;
                             },
                           ),
@@ -179,30 +210,37 @@ class _UserEditScreenState extends State<UserEditScreen> {
                             label: 'Confirm Password',
                             icon: Icons.lock_outline,
                             obscureText: _obscureConfirmPassword,
-                            onToggleObscureText: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                            onToggleObscureText: () =>
+                                setState(() =>
+                                _obscureConfirmPassword = !_obscureConfirmPassword),
                             isPassword: true,
                             validator: (value) {
-                              if (value?.isEmpty ?? true) return 'Please enter password';
-                              if (value!.length < 6) return 'Password must be at least 6 characters';
+                              if (value?.isEmpty ?? true)
+                                return 'Please enter password';
+                              if (value!.length < 6)
+                                return 'Password must be at least 6 characters';
                               return null;
                             },
                           ),
-                           SizedBox(height: 20),
+                          SizedBox(height: 20),
                           _buildRoleDropdown(),
-                           SizedBox(height: 30),
+                          SizedBox(height: 30),
                           SizedBox(
                             width: double.infinity,
                             height: 54,
                             child: ElevatedButton(
                               onPressed: _UpdateUserData,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor,
+                                backgroundColor: Theme
+                                    .of(context)
+                                    .primaryColor,
                                 foregroundColor: Colors.white,
                                 elevation: 4,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16),
                               ),
                               child: const Text(
                                 'Update User',
@@ -263,11 +301,14 @@ class _UserEditScreenState extends State<UserEditScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+          borderSide: BorderSide(color: Theme
+              .of(context)
+              .primaryColor, width: 2),
         ),
         filled: true,
         fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+            vertical: 16, horizontal: 16),
       ),
       validator: validator,
     );
@@ -290,22 +331,26 @@ class _UserEditScreenState extends State<UserEditScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+          borderSide: BorderSide(color: Theme
+              .of(context)
+              .primaryColor, width: 2),
         ),
         filled: true,
         fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+            vertical: 16, horizontal: 16),
       ),
-      items: _roles.map((role) => DropdownMenuItem(
-        value: role,
-        child: Text(
-          role,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey.shade700,
-          ),
-        ),
-      )).toList(),
+      items: _roles.map((role) =>
+          DropdownMenuItem(
+            value: role,
+            child: Text(
+              role,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          )).toList(),
       onChanged: (value) => setState(() => _selectedRole = value),
       validator: (value) => value == null ? 'Please select a role' : null,
       icon: Icon(Icons.arrow_drop_down, color: Colors.grey.shade500),
@@ -316,9 +361,8 @@ class _UserEditScreenState extends State<UserEditScreen> {
 
   void _UpdateUserData() {
     if (_formKey.currentState?.validate() ?? false) {
-
       _updateUser();
-      Navigator.pop(context);
+      Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('User Update successfully!'),
@@ -339,6 +383,21 @@ class _UserEditScreenState extends State<UserEditScreen> {
     super.dispose();
   }
 
-  void _updateUser() {}
+  Future<void> _updateUser() async {
+    var url = Uri.parse(
+        "https://prakrutitech.xyz/batch_project/update_user.php");
+    var response = await http.post(url, body: {
+      'id': widget.id,
+      'name': _nameController.text,
+      'role': _selectedRole.toString(),
+      'email': _emailController.text,
+      'phone_number': _contactController.text,
+    });
 
+    if (response.statusCode == 200) {
+      print("User edit successfully");
+    } else {
+      print("Not working for user edit screen");
+    }
+  }
 }
