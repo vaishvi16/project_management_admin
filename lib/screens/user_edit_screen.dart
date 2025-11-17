@@ -4,15 +4,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:project_management_admin/screens/all_user_screen.dart';
 
 import '../models/project.dart';
 
 class UserEditScreen extends StatefulWidget {
-
-  var id;
-  var user;
-  UserEditScreen({required this.id, required this.user});
+  final dynamic user;
+  const UserEditScreen({super.key, this.user});
 
   @override
   State<UserEditScreen> createState() => _UserEditScreenState();
@@ -31,16 +28,6 @@ class _UserEditScreenState extends State<UserEditScreen> {
   bool _obscureConfirmPassword = true;
 
   static const List<String> _roles = ['Designer', 'Web Developer', 'App Developer', 'Tester', 'Backend'];
-
-  @override
-  void initState() {
-     _nameController.text = widget.user['name'];
-     _emailController.text = widget.user['email'];
-     _contactController.text = widget.user['phone_number'];
-    // _passwordController.text = widget.user['password'];
-     _selectedRole = widget.user['role'];
-
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -331,7 +318,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
     if (_formKey.currentState?.validate() ?? false) {
 
       _updateUser();
-      Navigator.pop(context, true);
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('User Update successfully!'),
@@ -352,24 +339,6 @@ class _UserEditScreenState extends State<UserEditScreen> {
     super.dispose();
   }
 
-  Future<void> _updateUser() async{
-    var url = Uri.parse("https://prakrutitech.xyz/batch_project/update_user.php");
-    var response = await http.post(url, body: {
-      'id': widget.id,
-      'name': _nameController.text.toString(),
-      'role': _selectedRole.toString(),
-      'email': _emailController.text.toString(),
-      'phone_number': _contactController.text.toString(),
-    });
-
-    if(response.statusCode == 200){
-      print("USer edit successfully");
-
-    }
-
-    else{
-      print("Not working for user edit screen");
-    }
-  }
+  void _updateUser() {}
 
 }
