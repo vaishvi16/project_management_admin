@@ -280,7 +280,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
     return result ?? false;
   }
 
-  void _deleteUser(int index, int userId) {
+  void _deleteUser(int index, var userId) {
     final deletedUser = _users[index];
 
     setState(() {
@@ -313,8 +313,6 @@ class _AllUserScreenState extends State<AllUserScreen> {
           _deletedIndexes.remove(index);
         });
 
-        // Server API call removed - only local deletion
-        print('User with ID $userId deleted locally');
       }
     });
   }
