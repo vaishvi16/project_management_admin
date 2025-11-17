@@ -35,6 +35,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
     getAllUser();
   }
@@ -67,6 +68,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
         foregroundColor: Colors.white,
         elevation: 4,
       ),
+
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -104,11 +106,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
               );
             } else if (!snapshot.hasData) {
               print("Snapshot has no data");
-              return Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade800),
-                ),
-              );
+              return Center(child: CircularProgressIndicator());
             }
 
             return ListView.builder(
@@ -132,11 +130,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
                     ),
                     alignment: Alignment.centerRight,
                     padding: EdgeInsets.only(right: 20),
-                    child: Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                      size: 30,
-                    ),
+                    child: Icon(Icons.delete, color: Colors.white, size: 30),
                   ),
                   secondaryBackground: Container(
                     decoration: BoxDecoration(
@@ -145,11 +139,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
                     ),
                     alignment: Alignment.centerRight,
                     padding: EdgeInsets.only(right: 20),
-                    child: Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                      size: 30,
-                    ),
+                    child: Icon(Icons.delete, color: Colors.white, size: 30),
                   ),
                   confirmDismiss: (direction) async {
                     return await _showDeleteConfirmation(user['name']);
@@ -169,17 +159,20 @@ class _AllUserScreenState extends State<AllUserScreen> {
                           left: BorderSide(color: roleColor, width: 6),
                         ),
                       ),
+
                       child: InkWell(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const UserEditScreen(),
+                              builder: (context) =>
+                                  UserEditScreen(id: user['id'], user: user),
                             ),
                           );
                         },
                         child: ListTile(
                           contentPadding: EdgeInsets.all(cardPadding),
+
                           leading: Container(
                             width: avatarSize,
                             height: avatarSize,
@@ -199,6 +192,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
                               ),
                             ),
                           ),
+
                           title: Text(
                             user['name'],
                             style: TextStyle(
@@ -206,6 +200,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
                               fontSize: titleSize,
                             ),
                           ),
+
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -251,11 +246,6 @@ class _AllUserScreenState extends State<AllUserScreen> {
                               ),
                             ],
                           ),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                            color: Colors.grey.shade500,
-                          ),
                         ),
                       ),
                     ),
@@ -282,10 +272,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -334,7 +321,9 @@ class _AllUserScreenState extends State<AllUserScreen> {
 
   Future<List<dynamic>> getAllUser() async {
     try {
-      var url = Uri.parse("https://prakrutitech.xyz/batch_project/view_user.php");
+      var url = Uri.parse(
+        "https://prakrutitech.xyz/batch_project/view_user.php",
+      );
       var response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -356,8 +345,5 @@ class _AllUserScreenState extends State<AllUserScreen> {
       print("Error in getAllUser: $e");
       throw Exception("Failed to load users: $e");
     }
-  }
-
-  void fetchInitials() {
   }
 }
