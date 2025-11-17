@@ -142,7 +142,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
                     child: Icon(Icons.delete, color: Colors.white, size: 30),
                   ),
                   confirmDismiss: (direction) async {
-                    return await _showDeleteConfirmation(user['name']);
+                    return await _showDeleteConfirmation(user['name'], user['id'], index);
                   },
                   onDismissed: (direction) {
                     _deleteUser(index, user['id']);
@@ -259,7 +259,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
     );
   }
 
-  Future<bool> _showDeleteConfirmation(String userName) async {
+  Future<bool> _showDeleteConfirmation(String userName, var id, var index) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -271,7 +271,9 @@ class _AllUserScreenState extends State<AllUserScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () async {
+              Navigator.of(context).pop(true);
+            },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
@@ -280,17 +282,31 @@ class _AllUserScreenState extends State<AllUserScreen> {
     return result ?? false;
   }
 
-  void _deleteUser(int index, var userId) {
-    final deletedUser = _users[index];
+  void _deleteUser(int index, var userId) async{
+    var url = Uri.parse("https://prakrutitech.xyz/batch_project/delete_user.php");
+    var response = await http.post(url,
+      body: {
+      'id' : userId
+      }
+    );
 
-    setState(() {
-      _deletedIndexes.add(index);
-    });
+    if(response.statusCode == 200){
+      print("Deleted successfully!");
+      if (_deletedIndexes.contains(index)) {
+        setState(() {
+          _users.removeAt(index);
+        });
 
-    // Show undo snackbar
+      }
+    }
+    else{
+      print("User not deleted!!!!!");
+    }
+
+    Navigator.pop(context, true);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('User ${deletedUser['name']} deleted'),
+        content: Text('User deleted'),
         backgroundColor: Colors.red,
         duration: Duration(seconds: 4),
         action: SnackBarAction(
@@ -305,16 +321,6 @@ class _AllUserScreenState extends State<AllUserScreen> {
         ),
       ),
     );
-
-    Future.delayed(Duration(seconds: 4), () {
-      if (_deletedIndexes.contains(index)) {
-        setState(() {
-          _users.removeAt(index);
-          _deletedIndexes.remove(index);
-        });
-
-      }
-    });
   }
 
   Future<List<dynamic>> getAllUser() async {

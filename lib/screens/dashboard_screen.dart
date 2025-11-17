@@ -108,14 +108,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       body: FutureBuilder<Map<String, int>>(
         future: _fetchAllStats(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (!snapshot.hasData) {
             return const Center(
               child: CircularProgressIndicator(color: Colors.blue),
             );
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(child: Text("Failed to load stats"));
           }
 
           // Update stats for UI
