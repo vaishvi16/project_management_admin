@@ -112,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => const ProjectDetailsScreen(),
+                              pageBuilder: (context, animation, secondaryAnimation) =>  ProjectDetailsScreen(),
                               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                 return FadeTransition(opacity: animation, child: child);
                               },

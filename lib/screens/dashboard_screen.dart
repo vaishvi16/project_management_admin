@@ -553,7 +553,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   void _navigateToProjects() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const ProjectDetailsScreen()),
+      MaterialPageRoute(builder: (context) =>  ProjectDetailsScreen()),
           (route) => false,
     );
   }
