@@ -85,7 +85,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
             }
            else if(!snapshot.hasData){
               print("Snapshot has no data");
-              return CircularProgressIndicator();
+              return Center(child: CircularProgressIndicator());
             }
 
             return ListView.builder(
@@ -197,7 +197,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const UserEditScreen(),
+                                  builder: (context) => UserEditScreen(id: user['id'], user: user),
                                 ),
                               );
                             },
@@ -271,9 +271,5 @@ class _AllUserScreenState extends State<AllUserScreen> {
       print("Get user api not working!!");
     }
     throw Exception("Exception occurred!");
-  }
-
-  fetchInitials(){
-
   }
 }
