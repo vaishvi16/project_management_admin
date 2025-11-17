@@ -8,11 +8,12 @@ import 'package:http/http.dart' as http;
 import '../models/project.dart';
 import 'add_project_screen.dart';
 import 'dashboard_screen.dart';
+import 'login_screen.dart';
 import 'project_view_detail_screen.dart';
 import 'project_edit_screen.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
-  const ProjectDetailsScreen({super.key});
+  ProjectDetailsScreen({super.key});
 
   @override
   State<ProjectDetailsScreen> createState() => _ProjectDetailsScreenState();
@@ -23,6 +24,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  String _selectedSortOption = 'All';
   late List<Animation<double>> _staggerAnimations;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -30,6 +32,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   double _scrollOffset = 0;
 
   late Future<List<Project>> _projectsFuture;
+  final GlobalKey _refreshIndicatorKey = GlobalKey();
 
   @override
   void initState() {
@@ -37,7 +40,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
     // Initialize controllers first
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: Duration(milliseconds: 1500),
       vsync: this,
     );
 
@@ -45,15 +48,15 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _animationController,
-        curve: const Interval(0, 0.5, curve: Curves.easeInOut),
+        curve: Interval(0, 0.5, curve: Curves.easeInOut),
       ),
     );
 
     _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+        Tween<Offset>(begin: Offset(0, 0.3), end: Offset.zero).animate(
           CurvedAnimation(
             parent: _animationController,
-            curve: const Interval(0.3, 1, curve: Curves.easeOutCubic),
+            curve: Interval(0.3, 1, curve: Curves.easeOutCubic),
           ),
         );
 
@@ -82,11 +85,22 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   }
 
   List<Project> _filteredProjects(List<Project> projects) {
-    if (_searchQuery.isEmpty) return projects;
-    return projects.where((project) {
+    if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
-      return project.name.toLowerCase().contains(query) ||
-          project.description.toLowerCase().contains(query);
+      projects = projects.where((project) {
+        return project.name.toLowerCase().contains(query) ||
+            project.description.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    if (_selectedSortOption == "All") {
+      return projects;
+    }
+
+    final filter = _selectedSortOption.trim().toLowerCase();
+
+    return projects.where((p) {
+      return p.status.trim().toLowerCase() == filter;
     }).toList();
   }
 
@@ -100,12 +114,21 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     return animation.value.clamp(0.01, 1.0);
   }
 
+  Future<void> _refreshProjects() async {
+    setState(() {
+      _projectsFuture = getProjects();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredProjects = _filteredProjects;
     final screenWidth = MediaQuery.of(context).size.width;
     final isWideScreen = screenWidth > 768;
     final appBarHeight = MediaQuery.of(context).padding.top + kToolbarHeight;
+
+    // Determine icon color based on scroll position
+    final iconColor = _scrollOffset > 100 ? Colors.black87 : Colors.white;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -114,8 +137,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         
         title: AnimatedOpacity(
           opacity: _scrollOffset > 100 ? 1 : 0,
-          duration: const Duration(milliseconds: 300),
-          child: const Text(
+          duration: Duration(milliseconds: 300),
+          child: Text(
             'Projects',
             style: TextStyle(
               fontWeight: FontWeight.w700,
@@ -131,195 +154,347 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           decoration: BoxDecoration(
             gradient: _scrollOffset > 100
                 ? null
-                : const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
-                  ),
+                : LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
+            ),
           ),
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
         actions: [
           IconButton(
-            icon: const Icon(Icons.dashboard, color: Colors.white),
+            icon: Icon(Icons.dashboard, color: iconColor),
             onPressed: _navigateToDashboard,
           ),
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () {},
+            icon: Icon(Icons.logout, color: iconColor),
+            onPressed: () {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
+            },
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
         ],
       ),
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          // Hero Section
-          SliverToBoxAdapter(
-            child: Container(
-              height: 320,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
+      body: RefreshIndicator(
+        key: _refreshIndicatorKey,
+        onRefresh: _refreshProjects,
+        displacement: 40.0, // Position from top
+        edgeOffset: 0.0, // Start from very top
+        color: Color(0xFF1976D2),
+        backgroundColor: Colors.white,
+        strokeWidth: 2.0,
+        triggerMode: RefreshIndicatorTriggerMode.onEdge,
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // Hero Section
+            SliverToBoxAdapter(
+              child: Container(
+                height: 320,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF1976D2), Color(0xFF7B1FA2)],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
+                  ),
                 ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
+                child: Stack(
+                  children: [
+                    // Background Pattern
+                    _buildBackgroundPattern(),
+
+                    // Content
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: appBarHeight + 20,
+                        left: 24,
+                        right: 24,
+                        bottom: 24,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SlideTransition(
+                            position: _slideAnimation,
+                            child: FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Project Portfolio',
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Manage and track all your projects in one place',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 32),
+
+                          // Search Bar
+                          SlideTransition(
+                            position:
+                            Tween<Offset>(
+                              begin: Offset(0, 0.5),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: _animationController,
+                                curve: Interval(
+                                  0.5,
+                                  1,
+                                  curve: Curves.easeOut,
+                                ),
+                              ),
+                            ),
+                            child: FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                  ),
+                                ),
+                                child: TextField(
+                                  controller: _searchController,
+                                  onChanged: (value) =>
+                                      setState(() => _searchQuery = value),
+                                  style: TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    hintText: 'Search projects...',
+                                    hintStyle: TextStyle(
+                                      color: Colors.white.withOpacity(0.7),
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.search,
+                                      color: Colors.white.withOpacity(0.7),
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Stack(
-                children: [
-                  // Background Pattern
-                  _buildBackgroundPattern(),
+            ),
+// Projects Count
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 16),
+                child: FutureBuilder<List<Project>>(
+                  future: _projectsFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
+                    }
 
-                  // Content
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: appBarHeight + 20,
-                      left: 24,
-                      right: 24,
-                      bottom: 24,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SlideTransition(
-                          position: _slideAnimation,
-                          child: FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Project Portfolio',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                    height: 1.2,
-                                  ),
+                    final projects = _filteredProjects(snapshot.data!);
+
+                    // Show message when no projects match the filter
+                    if (projects.isEmpty) {
+                      return Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '0 Projects',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Manage and track all your projects in one place',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontWeight: FontWeight.w400,
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Sorted by: ',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _selectedSortOption,
+                                      icon: Icon(
+                                        Icons.arrow_drop_down,
+                                        size: 20,
+                                        color: Colors.black87,
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey.shade800,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      dropdownColor: Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                      items: [
+                                        DropdownMenuItem(
+                                          value: 'All',
+                                          child: Text('All'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'pending',
+                                          child: Text('Pending'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'continue',
+                                          child: Text('Continue'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'onhold',
+                                          child: Text('On Hold'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'complete',
+                                          child: Text('Complete'),
+                                        ),
+                                      ],
+                                      onChanged: (value) {
+                                        if (value != null) {
+                                          setState(() {
+                                            _selectedSortOption = value;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          Text(
+                            _selectedSortOption == 'All'
+                                ? 'No projects found'
+                                : 'No ${_selectedSortOption} projects found',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
                             ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      );
+                    }
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${projects.length} Projects',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 32),
-
-                        // Search Bar
-                        SlideTransition(
-                          position:
-                              Tween<Offset>(
-                                begin: const Offset(0, 0.5),
-                                end: Offset.zero,
-                              ).animate(
-                                CurvedAnimation(
-                                  parent: _animationController,
-                                  curve: const Interval(
-                                    0.5,
-                                    1,
-                                    curve: Curves.easeOut,
-                                  ),
-                                ),
-                              ),
-                          child: FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
-                                ),
-                              ),
-                              child: TextField(
-                                controller: _searchController,
-                                onChanged: (value) =>
-                                    setState(() => _searchQuery = value),
-                                style: const TextStyle(color: Colors.white),
-                                decoration: InputDecoration(
-                                  hintText: 'Search projects...',
-                                  hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.7),
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.search,
-                                    color: Colors.white.withOpacity(0.7),
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 16,
-                                  ),
-                                ),
+                        Row(
+                          children: [
+                            Text(
+                              'Sorted by: ',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                          ),
+                            DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedSortOption,
+                                icon: Icon(
+                                  Icons.arrow_drop_down,
+                                  size: 20,
+                                  color: Colors.black87,
+                                ),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade800,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                dropdownColor: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                items: [
+                                  DropdownMenuItem(
+                                    value: 'All',
+                                    child: Text('All'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'pending',
+                                    child: Text('Pending'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'continue',
+                                    child: Text('Continue'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'onhold',
+                                    child: Text('On Hold'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'complete',
+                                    child: Text('Complete'),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() {
+                                      _selectedSortOption = value;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
             ),
-          ),
 
-          // Projects Count
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-              child: FutureBuilder<List<Project>>(
-                future: _projectsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No projects found'));
-                  }
+            // Projects Grid/List
+            isWideScreen ? _buildWideScreenGrid() : _buildMobileList(),
 
-                  final projects = _filteredProjects(snapshot.data!);
-
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${projects.length} Projects',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        'Sorted by: Recent',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // Projects Grid/List
-          isWideScreen ? _buildWideScreenGrid() : _buildMobileList(),
-
-          SliverToBoxAdapter(child: const SizedBox(height: 100)),
-        ],
+            SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
       floatingActionButton: _buildFloatingActionButton(),
     );
@@ -350,8 +525,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           return SliverToBoxAdapter(
             child: Center(child: Text('Error: ${snapshot.error}')),
           );
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const SliverToBoxAdapter(
+        } else if (!snapshot.hasData) {
+          return SliverToBoxAdapter(
             child: Center(child: CircularProgressIndicator()),
           );
         }
@@ -359,10 +534,16 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         final projects = snapshot.data!;
         final filteredProjects = _filteredProjects(projects);
 
+        if (filteredProjects.isEmpty) {
+          return SliverToBoxAdapter(
+            child: SizedBox.shrink(), // Empty state already shown in count section
+          );
+        }
+
         return SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 20,
               mainAxisSpacing: 20,
@@ -386,8 +567,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           return SliverToBoxAdapter(
             child: Center(child: Text('Error: ${snapshot.error}')),
           );
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const SliverToBoxAdapter(
+        } else if (!snapshot.hasData) {
+          return SliverToBoxAdapter(
             child: Center(child: CircularProgressIndicator()),
           );
         }
@@ -395,11 +576,17 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         final projects = snapshot.data!;
         final filteredProjects = _filteredProjects(projects);
 
+        if (filteredProjects.isEmpty) {
+          return SliverToBoxAdapter(
+            child: SizedBox.shrink(),
+          );
+        }
+
         return SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
             final project = filteredProjects[index];
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: _buildProjectCard(project, index),
             );
           }, childCount: filteredProjects.length),
@@ -423,7 +610,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
                 blurRadius: 20,
-                offset: const Offset(0, 4),
+                offset: Offset(0, 4),
               ),
             ],
           ),
@@ -438,7 +625,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                   width: 4,
                   decoration: BoxDecoration(
                     color: statusColor,
-                    borderRadius: const BorderRadius.only(
+                    borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       bottomLeft: Radius.circular(20),
                     ),
@@ -450,7 +637,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
               GestureDetector(
                 onTap: () => _navigateToProjectDetail(project),
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -465,15 +652,14 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                               children: [
                                 Text(
                                   project.title,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                     color: Colors.black87,
                                   ),
                                   maxLines: null,
-                                  //overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                 Text(
                                   project.type,
                                   style: TextStyle(
@@ -488,7 +674,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                           Row(
                             children: [
                               _buildStatusBadge(project.status, statusColor),
-                              const SizedBox(width: 18),
+                              SizedBox(width: 18),
                               // Placeholder for menu icon
                               Container(width: 24, height: 24),
                             ],
@@ -496,7 +682,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                         ],
                       ),
 
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       // Description
                       Text(
@@ -510,7 +696,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                         overflow: TextOverflow.ellipsis,
                       ),
 
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
 
                       // Progress Section
                       Column(
@@ -537,7 +723,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Stack(
                             children: [
                               Container(
@@ -550,11 +736,11 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                               LayoutBuilder(
                                 builder: (context, constraints) {
                                   return AnimatedContainer(
-                                    duration: const Duration(milliseconds: 800),
+                                    duration: Duration(milliseconds: 800),
                                     curve: Curves.easeOut,
                                     height: 6,
                                     width:
-                                        constraints.maxWidth * project.progress,
+                                    constraints.maxWidth * project.progress,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
@@ -572,7 +758,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                         ],
                       ),
 
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       // Footer
                       Row(
@@ -586,7 +772,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                                 size: 16,
                                 color: Colors.grey.shade600,
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6),
                               Text(
                                 '${project.members.length} members',
                                 style: TextStyle(
@@ -605,13 +791,13 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                                 size: 16,
                                 color: Colors.grey.shade600,
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6),
                               Text(
                                 '$daysRemaining days left',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: daysRemaining < 7
-                                      ? const Color(0xFFF57C00)
+                                      ? Color(0xFFF57C00)
                                       : Colors.grey.shade600,
                                   fontWeight: daysRemaining < 7
                                       ? FontWeight.w600
@@ -645,7 +831,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
                           blurRadius: 4,
-                          offset: const Offset(0, 2),
+                          offset: Offset(0, 2),
                         ),
                       ],
                     ),
@@ -666,7 +852,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
   Widget _buildStatusBadge(String status, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
@@ -680,7 +866,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
             height: 6,
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: 6),
           Text(
             status.toUpperCase(),
             style: TextStyle(
@@ -696,22 +882,22 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
 
   Widget _buildFloatingActionButton() {
     return Transform.translate(
-      offset: const Offset(0, -20),
+      offset: Offset(0, -20),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF7B1FA2).withOpacity(0.4),
+              color: Color(0xFF7B1FA2).withOpacity(0.4),
               blurRadius: 20,
-              offset: const Offset(0, 8),
+              offset: Offset(0, 8),
             ),
           ],
         ),
         child: FloatingActionButton.extended(
           onPressed: _navigateToAddProject,
-          icon: const Icon(Icons.add, color: Colors.white, size: 20),
-          label: const Text(
+          icon: Icon(Icons.add, color: Colors.white, size: 20),
+          label: Text(
             'New Project',
             style: TextStyle(
               color: Colors.white,
@@ -719,7 +905,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
               fontSize: 14,
             ),
           ),
-          backgroundColor: const Color(0xFF7B1FA2),
+          backgroundColor: Color(0xFF7B1FA2),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -732,7 +918,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   void _showProjectMenu(BuildContext context, Project project) {
     final RenderBox button = context.findRenderObject() as RenderBox;
     final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+    Overlay.of(context).context.findRenderObject() as RenderBox;
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
         button.localToGlobal(Offset.zero, ancestor: overlay),
@@ -751,7 +937,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         PopupMenuItem<String>(
           value: 'view',
           child: Row(
-            children: const [
+            children: [
               Icon(Icons.visibility, size: 18),
               SizedBox(width: 8),
               Text('View Detail'),
@@ -761,7 +947,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         PopupMenuItem<String>(
           value: 'edit',
           child: Row(
-            children: const [
+            children: [
               Icon(Icons.edit, size: 18),
               SizedBox(width: 8),
               Text('Edit'),
@@ -782,16 +968,16 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const DashboardScreen(),
+            DashboardScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+            position: Tween<Offset>(begin: Offset(1, 0), end: Offset.zero)
                 .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeInOutCubic,
-                  ),
-                ),
+              CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeInOutCubic,
+              ),
+            ),
             child: child,
           );
         },
@@ -803,7 +989,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     final newProject = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const AddProjectScreen(),
+        builder: (context) => AddProjectScreen(),
         fullscreenDialog: true,
       ),
     );
@@ -854,17 +1040,17 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     switch (status.toLowerCase()) {
       case 'onhold':
       case 'on hold':
-        return const Color(0xFFF57C00); // Orange
+        return Color(0xFFF57C00); // Orange
       case 'continue':
       case 'in progress':
-        return const Color(0xFF1976D2); // Blue
+        return Color(0xFF1976D2); // Blue
       case 'pending':
-        return const Color(0xFFFFA000); // Amber
+        return Color(0xFFFFA000); // Amber
       case 'complete':
       case 'completed':
-        return const Color(0xFF388E3C); // Green
+        return Color(0xFF388E3C); // Green
       case 'approved':
-        return const Color(0xFF7B1FA2); // Purple
+        return Color(0xFF7B1FA2); // Purple
       default:
         return Colors.grey;
     }
@@ -890,7 +1076,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       setState(() {
         _staggerAnimations = List.generate(
           projects.length,
-          (index) => Tween<double>(begin: 0, end: 1).animate(
+              (index) => Tween<double>(begin: 0, end: 1).animate(
             CurvedAnimation(
               parent: _animationController,
               curve: Interval(
