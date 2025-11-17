@@ -8,7 +8,8 @@ import 'package:http/http.dart' as http;
 import '../models/project.dart';
 
 class UserEditScreen extends StatefulWidget {
-  const UserEditScreen({super.key});
+  final dynamic user;
+  const UserEditScreen({super.key, this.user});
 
   @override
   State<UserEditScreen> createState() => _UserEditScreenState();
