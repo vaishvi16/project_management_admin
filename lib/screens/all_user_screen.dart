@@ -57,7 +57,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
         return Colors.purple;
       case 'tester':
         return Colors.orange;
-      case 'developer':
+      case 'backend':
         return Colors.teal;
       default:
         return Colors.grey;
