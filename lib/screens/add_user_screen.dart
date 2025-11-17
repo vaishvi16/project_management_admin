@@ -121,7 +121,15 @@ class _AddUserScreenState extends State<AddUserScreen> {
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
                               if (value?.isEmpty ?? true) return 'Please enter email';
-                              if (!value!.contains('@')) return 'Please enter valid email';
+
+                              final emailRegex = RegExp(
+                                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                              );
+
+                              if (!emailRegex.hasMatch(value!)) {
+                                return 'Please enter a valid email address';
+                              }
+
                               return null;
                             },
                           ),
@@ -131,7 +139,19 @@ class _AddUserScreenState extends State<AddUserScreen> {
                             label: 'Mobile Number',
                             icon: Icons.phone_android_outlined,
                             keyboardType: TextInputType.phone,
-                            validator: (value) => value?.isEmpty ?? true ? 'Please enter mobile number' : null,
+                            validator: (value) {
+                              if (value?.isEmpty ?? true) return 'Please enter mobile number';
+
+                              if (value!.length != 10) {
+                                return 'Mobile number must be 10 digits';
+                              }
+
+                              if (!RegExp(r'^[6-9]\d{9}$').hasMatch(value)) {
+                                return 'Please enter a valid Indian mobile number';
+                              }
+
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 20),
                           _buildTextField(
