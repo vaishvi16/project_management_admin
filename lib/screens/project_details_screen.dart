@@ -134,6 +134,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       backgroundColor: Colors.white,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+
         title: AnimatedOpacity(
           opacity: _scrollOffset > 100 ? 1 : 0,
           duration: Duration(milliseconds: 300),
