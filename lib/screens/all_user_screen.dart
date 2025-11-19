@@ -303,22 +303,11 @@ class _AllUserScreenState extends State<AllUserScreen> {
       print("User not deleted!!!!!");
     }
 
-    Navigator.pop(context, true);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('User deleted'),
         backgroundColor: Colors.red,
         duration: Duration(seconds: 4),
-        action: SnackBarAction(
-          label: 'UNDO',
-          textColor: Colors.white,
-          onPressed: () {
-            // Undo the deletion
-            setState(() {
-              _deletedIndexes.remove(index);
-            });
-          },
-        ),
       ),
     );
   }

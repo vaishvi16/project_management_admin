@@ -526,7 +526,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           );
         } else if (!snapshot.hasData) {
           return SliverToBoxAdapter(
-            child: Center(child: CircularProgressIndicator()),
+           // child: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -568,7 +568,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           );
         } else if (!snapshot.hasData) {
           return SliverToBoxAdapter(
-            child: Center(child: CircularProgressIndicator()),
+            //child: Center(child: CircularProgressIndicator()),
           );
         }
 
