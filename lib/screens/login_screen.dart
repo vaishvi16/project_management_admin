@@ -1,6 +1,10 @@
 // lib/screens/login_screen.dart
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import '../models/admin_model.dart';
 import '../providers/theme_provider.dart';
 import 'project_details_screen.dart';
 
@@ -109,15 +113,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
                           // Simulate login success
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) =>  ProjectDetailsScreen(),
-                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                return FadeTransition(opacity: animation, child: child);
-                              },
-                            ),
-                          );
+                          
+                          adminLogin();
                         }
                       },
                       child: const Text('Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -144,5 +141,36 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void adminLogin() async{
+    var url = Uri.parse("https://prakrutitech.xyz/batch_project/admin_login.php");
+    var response = await http.post(url, body: {
+      'email': _emailController.text.toString(),
+      'password': _passwordController.text.toString()
+    });
+
+    print("response body of admin login ${response.body}");
+
+    final jsonData = jsonDecode(response.body);
+    AdminModel amodel = AdminModel.fromJson(jsonData);
+    print("User model: $amodel");
+
+    if(amodel.code == 200){
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>  ProjectDetailsScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      );
+      print("Admin Login Success");
+    }
+    else if(amodel.code == 401 || amodel.code == 400){
+      print("Admin login Failed!");
+    }
+
   }
 }
