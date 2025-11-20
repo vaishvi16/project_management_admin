@@ -61,8 +61,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         );
 
     _scrollController.addListener(_onScroll);
-
-    // Start animations after frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _animationController.forward();
     });
