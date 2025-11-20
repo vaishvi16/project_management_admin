@@ -40,6 +40,7 @@ dependencies:
   shared_preferences: ^2.3.2
   http: ^1.6.0
   dio: any
+  connectivity_plus: ^6.1.4
 
 dev_dependencies:
   flutter_test:

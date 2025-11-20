@@ -29,7 +29,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     'Complete': 0,
     'Pending': 0,
     'On Hold': 0,
-    'teamMembers': 12,
+    'teamMembers': 0,
   };
 
   @override
