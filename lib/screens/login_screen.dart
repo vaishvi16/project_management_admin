@@ -24,18 +24,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: themeProvider.currentTheme.brightness == Brightness.light
-                ? [Colors.blue.shade50, Colors.white]
-                : [Colors.indigo.shade900, Colors.black],
-          ),
-        ),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -122,12 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Theme Toggle (for demo)
-                  TextButton.icon(
-                    onPressed: () => themeProvider.toggleTheme(),
-                    icon: Icon(themeProvider.currentThemeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
-                    label: Text('Toggle ${themeProvider.currentThemeMode == ThemeMode.dark ? 'Light' : 'Dark'} Mode'),
-                  ),
+
                 ],
               ),
             ),
