@@ -1,9 +1,13 @@
 // lib/screens/splash_screen.dart
 import 'dart:math' as math;
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:project_management_admin/screens/project_details_screen.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
+import '../shared_preferences/shared_pref.dart';
+import 'connectivity_error_screen.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,6 +19,9 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  bool _navigated = false;
+
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -34,6 +41,9 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+
+    Future.delayed(const Duration(seconds: 2), _checkConnectivity);
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 2500),
       vsync: this,
@@ -61,25 +71,21 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.4, 0.9, curve: Curves.easeOutBack),
-      ),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.4, 0.9, curve: Curves.easeOutBack),
+          ),
+        );
 
-    _gradientAnimation = ColorTween(
-      begin: _gradientColors[0],
-      end: _gradientColors[1],
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 1.0, curve: Curves.easeInOut),
-      ),
-    );
+    _gradientAnimation =
+        ColorTween(begin: _gradientColors[0], end: _gradientColors[1]).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 1.0, curve: Curves.easeInOut),
+          ),
+        );
 
     // Particle animations
     for (int i = 0; i < _particleCount; i++) {
@@ -103,13 +109,12 @@ class _SplashScreenState extends State<SplashScreen>
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const LoginScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
             transitionDuration: const Duration(milliseconds: 800),
           ),
         );
@@ -180,7 +185,9 @@ class _SplashScreenState extends State<SplashScreen>
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.white.withOpacity(0.3 * _getSafeValue(_fadeAnimation)),
+                                      color: Colors.white.withOpacity(
+                                        0.3 * _getSafeValue(_fadeAnimation),
+                                      ),
                                       blurRadius: 40,
                                       spreadRadius: 10,
                                     ),
@@ -275,10 +282,14 @@ class _SplashScreenState extends State<SplashScreen>
           final distance = 150.0 * animationValue;
 
           return Positioned(
-            left: MediaQuery.of(context).size.width / 2 +
-                distance * math.cos(angle) - 4,
-            top: MediaQuery.of(context).size.height / 2 +
-                distance * math.sin(angle) - 4,
+            left:
+                MediaQuery.of(context).size.width / 2 +
+                distance * math.cos(angle) -
+                4,
+            top:
+                MediaQuery.of(context).size.height / 2 +
+                distance * math.sin(angle) -
+                4,
             child: Transform.rotate(
               angle: angle,
               child: Opacity(
@@ -437,6 +448,45 @@ class _SplashScreenState extends State<SplashScreen>
         },
       ),
     );
+  }
+
+  void _checkConnectivity() {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> result,
+    ) async {
+      if (_navigated) return; // prevent double navigation
+
+      if (result.contains(ConnectivityResult.mobile) ||
+          result.contains(ConnectivityResult.wifi)) {
+        bool isLoggedIn = await SharedPref.getLoginStatus();
+
+        setState(() {
+          _navigated = true;
+        });
+
+        if (isLoggedIn) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ProjectDetailsScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        }
+      } else {
+        setState(() {
+          _navigated = true;
+        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ConnectivityErrorScreen(),
+          ),
+        );
+      }
+    });
   }
 }
 

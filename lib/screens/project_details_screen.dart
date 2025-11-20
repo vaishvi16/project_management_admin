@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:project_management_admin/shared_preferences/shared_pref.dart';
 
 import '../models/project.dart';
 import 'add_project_screen.dart';
@@ -168,7 +169,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
           ),
           IconButton(
             icon: Icon(Icons.logout, color: iconColor),
-            onPressed: () {
+            onPressed: () async {
+              await SharedPref.saveLoginStatus(false);
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
             },
           ),

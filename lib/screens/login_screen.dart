@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:project_management_admin/shared_preferences/shared_pref.dart';
 import 'package:provider/provider.dart';
 import '../models/admin_model.dart';
 import '../providers/theme_provider.dart';
@@ -157,6 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
     print("User model: $amodel");
 
     if(amodel.code == 200){
+      await SharedPref.saveLoginStatus(true);
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
