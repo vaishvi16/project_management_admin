@@ -1,7 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:project_management_admin/models/reset_pass_model.dart';
+import 'package:project_management_admin/screens/dashboard_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+  var email;
+  var id;
+
+  ForgotPasswordScreen({required this.email, required this.id});
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -13,7 +21,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   TextEditingController _passcontoller = new TextEditingController();
   TextEditingController _confirmpasscontoller = new TextEditingController();
   bool _obscurePassword = true;
-  bool _obscureConfromPassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void initState() {
+    _emailcontoller.text = widget.email;
+    print("${widget.email}");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +52,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   return null;
                 },
                 controller: _emailcontoller,
+                readOnly: true,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email),
@@ -56,7 +71,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   return null;
                 },
                 controller: _passcontoller,
-                  obscureText: _obscurePassword,
+                obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Password",
@@ -81,19 +96,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   return null;
                 },
                 controller: _confirmpasscontoller,
-                obscureText: _obscureConfromPassword,
+                obscureText: _obscureConfirmPassword,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Confirm Password",
                   prefixIcon: Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscureConfromPassword
+                      _obscureConfirmPassword
                           ? Icons.visibility_off
                           : Icons.visibility,
                     ),
-                    onPressed: () =>
-                        setState(() => _obscureConfromPassword = !_obscureConfromPassword),
+                    onPressed: () => setState(
+                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                    ),
                   ),
                 ),
               ),
@@ -115,17 +131,42 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   _validationform() {
     if (_formKey.currentState!.validate()) {
-      String password=_passcontoller.text.toString();
-      String confirmpass=_confirmpasscontoller.text.toString();
-      if(password==confirmpass){
+      String password = _passcontoller.text.toString();
+      String confirmpass = _confirmpasscontoller.text.toString();
+      if (password == confirmpass) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Login Succesfully ")));
-      }else{
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("password and confrompassword should be same ")));
+        ).showSnackBar(SnackBar(content: Text("Password updated successfully ")));
+        _resetPassword();
+        Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardScreen(),));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("password and confirm password should be same "),
+          ),
+        );
       }
+    }
+  }
+
+  void _resetPassword() async{
+    var url = Uri.parse("https://prakrutitech.xyz/batch_project/reset_password.php");
+
+    var response = await http.post(
+      url, body: {
+        'request_id': widget.id,
+      'new_password' : _confirmpasscontoller.text.toString()
+      }
+    );
+
+    var jsonData = jsonDecode(response.body);
+    ResetPassModel rpmodel = ResetPassModel.fromJson(jsonData);
+
+    if(rpmodel.code == 404){
+      print("Invalid request");
+    }
+    else if(rpmodel.code == 200){
+      print("${rpmodel.message}");
     }
   }
 }
