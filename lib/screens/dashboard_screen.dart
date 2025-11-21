@@ -7,6 +7,7 @@ import '../models/project.dart';
 import 'add_user_screen.dart';
 import 'add_project_screen.dart';
 import 'all_user_screen.dart';
+import 'forgot_request.dart';
 import 'history_screen.dart';
 import 'project_details_screen.dart';
 
@@ -443,8 +444,14 @@ class _DashboardScreenState extends State<DashboardScreen>
       {
         'title': 'View Users',
         'icon': Icons.people,
-        'color': const Color(0xFF7B1FA2), // Purple
+        'color': const Color(0xFF7B1FA2),
         'onTap': _navigateToViewUsers,
+      },
+      {
+        'title': 'Pending Request',
+        'icon': Icons.pending,
+        'color': Color(0xFFA27D1F),
+        'onTap': _navigateToForgot,
       },
     ];
 
@@ -551,6 +558,13 @@ class _DashboardScreenState extends State<DashboardScreen>
       context,
       MaterialPageRoute(builder: (context) =>  ProjectDetailsScreen()),
           (route) => false,
+    );
+  }
+
+  void _navigateToForgot() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) =>  ForgotRequestScreen()),
     );
   }
 }
