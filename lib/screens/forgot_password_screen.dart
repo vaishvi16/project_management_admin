@@ -124,7 +124,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       }else{
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("password and confrompassword should be same ")));
+        ).showSnackBar(SnackBar(content: Text("password and confrompassword should be same")));
       }
     }
   }

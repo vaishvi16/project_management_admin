@@ -376,7 +376,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                                           child: Text('Continue'),
                                         ),
                                         DropdownMenuItem(
-                                          value: 'onhold',
+                                          value: 'On Hold',
                                           child: Text('On Hold'),
                                         ),
                                         DropdownMenuItem(
