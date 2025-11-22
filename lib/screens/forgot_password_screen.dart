@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:project_management_admin/models/reset_pass_model.dart';
 import 'package:project_management_admin/screens/dashboard_screen.dart';
+import 'package:project_management_admin/screens/project_details_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   var email;
@@ -138,7 +139,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text("Password updated successfully ")));
         _resetPassword();
-        Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardScreen(),));
+        Navigator.pop(context);
+
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
