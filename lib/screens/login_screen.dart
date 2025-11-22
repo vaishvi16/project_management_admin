@@ -60,6 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 40),
                   // Email Field with advanced styling
                   TextFormField(
+                    textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.emailAddress,
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',

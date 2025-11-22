@@ -108,6 +108,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                       child: Column(
                         children: [
                           _buildTextField(
+                            textInputAction: TextInputAction.next,
                             controller: _nameController,
                             label: 'Full Name',
                             icon: Icons.person_outline,
@@ -115,6 +116,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                           ),
                           const SizedBox(height: 20),
                           _buildTextField(
+                            textInputAction: TextInputAction.next,
                             controller: _emailController,
                             label: 'Email Address',
                             icon: Icons.email_outlined,
@@ -135,6 +137,8 @@ class _AddUserScreenState extends State<AddUserScreen> {
                           ),
                           const SizedBox(height: 20),
                           _buildTextField(
+                            textInputAction: TextInputAction.next,
+                            MaxLength: 10,
                             controller: _contactController,
                             label: 'Mobile Number',
                             icon: Icons.phone_android_outlined,
@@ -210,12 +214,16 @@ class _AddUserScreenState extends State<AddUserScreen> {
     required IconData icon,
     bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
+    TextInputAction? textInputAction,
+    int? MaxLength,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
       keyboardType: keyboardType,
+      maxLength: MaxLength,
+      textInputAction: textInputAction,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.grey.shade600),
