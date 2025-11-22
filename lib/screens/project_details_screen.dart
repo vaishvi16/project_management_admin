@@ -376,7 +376,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                                           child: Text('Continue'),
                                         ),
                                         DropdownMenuItem(
-                                          value: 'onhold',
+                                          value: 'On Hold',
                                           child: Text('On Hold'),
                                         ),
                                         DropdownMenuItem(
@@ -462,7 +462,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                                     child: Text('Continue'),
                                   ),
                                   DropdownMenuItem(
-                                    value: 'onhold',
+                                    value: 'On Hold',
                                     child: Text('On Hold'),
                                   ),
                                   DropdownMenuItem(
@@ -1036,20 +1036,16 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   }
 
   Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'onhold':
-      case 'on hold':
-        return Color(0xFFF57C00); // Orange
-      case 'continue':
-      case 'in progress':
-        return Color(0xFF1976D2); // Blue
+    status = status.trim().toLowerCase();
+    switch (status) {
       case 'pending':
-        return Color(0xFFFFA000); // Amber
+        return const Color(0xFFF57C00);
+      case 'continue':
+        return const Color(0xFF1976D2);
+      case 'on hold':
+        return const Color(0xFFD000FF);
       case 'complete':
-      case 'completed':
-        return Color(0xFF388E3C); // Green
-      case 'approved':
-        return Color(0xFF7B1FA2); // Purple
+        return const Color(0xFF388E3C);
       default:
         return Colors.grey;
     }
