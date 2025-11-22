@@ -15,6 +15,8 @@ class ForgotRequestScreen extends StatefulWidget {
 
 class _ForgotRequestScreenState extends State<ForgotRequestScreen> {
   late List<dynamic> _userData = [];
+  bool _isLoading = true;
+  final GlobalKey _refreshIndicatorKey = GlobalKey();
 
   @override
   void initState() {
@@ -30,65 +32,112 @@ class _ForgotRequestScreenState extends State<ForgotRequestScreen> {
         backgroundColor: Colors.blue.shade800,
         foregroundColor: Colors.white,
       ),
-      body: FutureBuilder(future: getRequests(), builder: (context, AsyncSnapshot snapshot) {
-        if (snapshot.hasError) {
-          print("Snapshot has error ${snapshot.error}");
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red),
-                SizedBox(height: 16),
-                Text(
-                  'Error loading requests',
-                  style: TextStyle(fontSize: 18, color: Colors.red),
-                ),
-              ],
-            ),
-          );
-        }
-        return  ListView.builder(
-          padding: EdgeInsets.all(16.0),
-          itemCount: _userData.length,
-          itemBuilder: (context, index) {
-            final user = _userData[index];
-            return InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ForgotPasswordScreen(email: user['email'], id: user['id'])),
-                );
-              },
-              child: Card(
-                margin: EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  leading: Icon(Icons.person),
-                  title: Text(user['email']!),
-                  subtitle: Text(user['role']!),
-                  trailing: Icon(Icons.arrow_forward_ios),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _userData.isEmpty
+          ? RefreshIndicator(
+              key: _refreshIndicatorKey,
+              onRefresh: getRequests,
+              displacement: 40.0,
+              edgeOffset: 0.0,
+              color: Color(0xFF1976D2),
+              backgroundColor: Colors.white,
+              strokeWidth: 2.0,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.inbox_outlined,
+                      size: 80,
+                      color: Colors.grey.shade400,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'No Requests Found',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'There are no pending password reset requests',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
-        );
-      },)
+            )
+          : ListView.builder(
+              padding: EdgeInsets.all(16.0),
+              itemCount: _userData.length,
+              itemBuilder: (context, index) {
+                final user = _userData[index];
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ForgotPasswordScreen(
+                          email: user['email'],
+                          id: user['id'],
+                        ),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    margin: EdgeInsets.only(bottom: 12),
+                    child: ListTile(
+                      leading: Icon(Icons.person),
+                      title: Text(user['email']!),
+                      subtitle: Text(user['role']!),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 
   Future<void> getRequests() async {
-    var url = Uri.parse(
-      "https://prakrutitech.xyz/batch_project/get_forgot_requests.php",
-    );
-    var response = await http.get(url);
+    setState(() {
+      _isLoading = true;
+    });
 
-    if (response.statusCode != 200) {
-      print("HTTP error: ${response.statusCode}");
-      return;
+    try {
+      var url = Uri.parse(
+        "https://prakrutitech.xyz/batch_project/get_forgot_requests.php",
+      );
+      var response = await http.get(url);
+
+      if (response.statusCode != 200) {
+        print("HTTP error: ${response.statusCode}");
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final jsonData = jsonDecode(response.body);
+      print("Json data ${jsonData['requests']}");
+
+      setState(() {
+        _userData = jsonData['requests'] ?? [];
+        _isLoading = false;
+      });
+      print("user data $_userData");
+    } catch (e) {
+      print("Error fetching requests: $e");
+      setState(() {
+        _isLoading = false;
+      });
     }
-
-    final jsonData = jsonDecode(response.body);
-    print("Json data ${jsonData['requests']}");
-    _userData = jsonData['requests'];
-    print("user data $_userData");
   }
 }

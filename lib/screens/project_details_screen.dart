@@ -178,8 +178,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       body: RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: _refreshProjects,
-        displacement: 40.0, // Position from top
-        edgeOffset: 0.0, // Start from very top
+        displacement: 40.0,
+        edgeOffset: 0.0,
         color: Color(0xFF1976D2),
         backgroundColor: Colors.white,
         strokeWidth: 2.0,

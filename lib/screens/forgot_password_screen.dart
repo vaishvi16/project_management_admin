@@ -139,7 +139,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text("Password updated successfully ")));
         _resetPassword();
-        Navigator.pop(context);
+        Navigator.pop(context,true);
 
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
