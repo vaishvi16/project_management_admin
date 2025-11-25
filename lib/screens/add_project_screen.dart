@@ -93,8 +93,11 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
 
   String _getUserNameById(String? userId, List<User> userList) {
     if (userId == null) return '';
-    final user = userList.firstWhere((user) => user.id == userId, orElse: () => User(id: '', name: '', email: '', role: '', phoneNumber: ''));
-    return user.name;
+    final user = userList.firstWhere(
+            (user) => user.id == userId,
+        orElse: () => User(id: '', name: '', email: '', role: '', phoneNumber: '')
+    );
+    return '${user.name} (${user.email})';
   }
 
   @override
@@ -408,23 +411,42 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
           horizontal: 16,
         ),
       ),
+      selectedItemBuilder: (BuildContext context) {
+        return _designerUsers.map<Widget>((User user) {
+          return Container(
+            height: 20, // Selected value ke liye choti height
+            alignment: Alignment.centerLeft,
+            child: Text(
+              user.name, // Sirf name dikhao selected state mein
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList();
+      },
       items: _designerUsers
           .map(
             (user) => DropdownMenuItem(
           value: user.id,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                user.name,
-                style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-              ),
-              // Text(
-              //   user.role,
-              //   style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-              // ),
-            ],
+          child: Container(
+            height: 50, // Dropdown items ke liye height
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.name,
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  user.email,
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ),
       )
@@ -434,6 +456,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
       icon: Icon(Icons.arrow_drop_down, color: Colors.grey.shade500),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(12),
+      isExpanded: true,
     );
   }
 
@@ -466,6 +489,19 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
           horizontal: 16,
         ),
       ),
+      selectedItemBuilder: (BuildContext context) {
+        return _developerUsers.map<Widget>((User user) {
+          return Container(
+            height: 20,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              user.name,
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList();
+      },
       items: _developerUsers
           .map(
             (user) => DropdownMenuItem(
@@ -478,10 +514,10 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                 user.name,
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
               ),
-              // Text(
-              //   user.role,
-              //   style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-              // ),
+              Text(
+                '(${user.email})',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
             ],
           ),
         ),
@@ -524,6 +560,19 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
           horizontal: 16,
         ),
       ),
+      selectedItemBuilder: (BuildContext context) {
+        return _testerUsers.map<Widget>((User user) {
+          return Container(
+            height: 20,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              user.name,
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList();
+      },
       items: _testerUsers
           .map(
             (user) => DropdownMenuItem(
@@ -536,10 +585,10 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                 user.name,
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
               ),
-              // Text(
-              //   user.role,
-              //   style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-              // ),
+              Text(
+                '(${user.email})',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
             ],
           ),
         ),
@@ -582,23 +631,39 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
           horizontal: 16,
         ),
       ),
+      selectedItemBuilder: (BuildContext context) {
+        return _backendUsers.map<Widget>((User user) {
+          return Container(
+            height: 20,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              user.name,
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList();
+      },
       items: _backendUsers
           .map(
             (user) => DropdownMenuItem(
           value: user.id,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                user.name,
-                style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-              ),
-              // Text(
-              //   user.role,
-              //   style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-              // ),
-            ],
+          child: Container(
+            height: 50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  user.name,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
+                Text(
+                  '(${user.email})',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
           ),
         ),
       )
