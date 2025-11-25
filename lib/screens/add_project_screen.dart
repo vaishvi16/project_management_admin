@@ -429,7 +429,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
             (user) => DropdownMenuItem(
           value: user.id,
           child: Container(
-            height: 50, // Dropdown items ke liye height
+            height: 50,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
