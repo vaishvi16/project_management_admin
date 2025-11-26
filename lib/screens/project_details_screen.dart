@@ -31,6 +31,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
   String _searchQuery = '';
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0;
+  TextEditingController addNoteController = TextEditingController();
 
   late Future<List<Project>> _projectsFuture;
   final GlobalKey _refreshIndicatorKey = GlobalKey();
@@ -1034,9 +1035,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     });
   }
 
-  Future<String?> _showAddNoteDialog() async {
+  Future<String?> _showAddNoteDialog(var id) async {
     final _formKey=GlobalKey<FormState>();
-    TextEditingController reasonController = TextEditingController();
 
     return showDialog<String>(
       context: context,
@@ -1052,7 +1052,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
                 }
                 return null;
               },
-              controller: reasonController,
+              controller: addNoteController,
               decoration: InputDecoration(hintText: "Enter Note..."),
             ),
           ),
@@ -1062,15 +1062,17 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
               child: const Text("Cancel"),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
               onPressed: () {
                 if(_formKey.currentState!.validate()){
-                  String reason=reasonController.text.toString();
+                  addNote(id);
+                  String reason=addNoteController.text.toString();
                   if(reason.isEmpty){
                     ScaffoldMessenger.of(
                       context,
                     ).showSnackBar(SnackBar(content: Text("Please Enter Reason")));
                   }else{
-                    Navigator.pop(context, reasonController.text.trim());
+                    Navigator.pop(context, addNoteController.text.trim());
                   }
                 }
               },
@@ -1091,7 +1093,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         _navigateToEditProject(project);
         break;
       case 'add':
-        _showAddNoteDialog;
+        _showAddNoteDialog(project.id);
         break;
     }
   }
@@ -1110,6 +1112,23 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       default:
         return Colors.grey;
     }
+  }
+
+  Future<void> addNote(var id) async {
+    var url = Uri.parse("https://prakrutitech.xyz/batch_project/insert_or_update_notes.php");
+    var response = await http.post(url, body: {
+      'id': id,
+      'admin_notes': addNoteController.text.toString(),
+    });
+
+    if(response.statusCode == 200) {
+      print("Project ID: $id");
+      print("Api called${response.body}");
+    } else {
+      print("Something went wrong");
+    }
+
+    addNoteController.text.trim();
   }
 
   Future<List<Project>> getProjects() async {
