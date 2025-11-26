@@ -414,10 +414,10 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
       selectedItemBuilder: (BuildContext context) {
         return _designerUsers.map<Widget>((User user) {
           return Container(
-            height: 20, // Selected value ke liye choti height
+            height: 20,
             alignment: Alignment.centerLeft,
             child: Text(
-              user.name, // Sirf name dikhao selected state mein
+              user.name,
               style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
               overflow: TextOverflow.ellipsis,
             ),
@@ -905,18 +905,45 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
 
       // Collect all selected team members
       List<String> allMembers = [];
+      List<String> allMembersEmail = [];
+
+      // Helper function to get user by ID
+      User? _getUserById(String? userId, List<User> userList) {
+        if (userId == null) return null;
+        try {
+          return userList.firstWhere((user) => user.id == userId);
+        } catch (e) {
+          return null;
+        }
+      }
 
       if (_selectedDesigner != null) {
-        allMembers.add(_getUserNameById(_selectedDesigner, _designerUsers));
+        final user = _getUserById(_selectedDesigner, _designerUsers);
+        if (user != null) {
+          allMembers.add(user.name);
+          allMembersEmail.add(user.email);
+        }
       }
       if (_selectedDeveloper != null) {
-        allMembers.add(_getUserNameById(_selectedDeveloper, _developerUsers));
+        final user = _getUserById(_selectedDeveloper, _developerUsers);
+        if (user != null) {
+          allMembers.add(user.name);
+          allMembersEmail.add(user.email);
+        }
       }
       if (_selectedTester != null) {
-        allMembers.add(_getUserNameById(_selectedTester, _testerUsers));
+        final user = _getUserById(_selectedTester, _testerUsers);
+        if (user != null) {
+          allMembers.add(user.name);
+          allMembersEmail.add(user.email);
+        }
       }
       if (_selectedBackend != null) {
-        allMembers.add(_getUserNameById(_selectedBackend, _backendUsers));
+        final user = _getUserById(_selectedBackend, _backendUsers);
+        if (user != null) {
+          allMembers.add(user.name);
+          allMembersEmail.add(user.email);
+        }
       }
 
       final newProject = Project(
@@ -926,6 +953,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         description: _descController.text,
         type: _selectedType ?? ' ',
         members: allMembers,
+        members_email: allMembersEmail,
         startDate: _startDate!,
         endDate: _endDate!,
         progress: 0.0,
@@ -968,6 +996,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         "type": project.type,
         "status": "Pending",
         "members_names": project.members.join(', '),
+        "members_email": project.members_email!.join(', '),
         "start_date": project.startDate.toIso8601String(),
         "end_date": project.endDate.toIso8601String(),
       },

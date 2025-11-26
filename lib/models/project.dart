@@ -6,6 +6,7 @@ class Project {
   final String description;
   final String type;
   final List<String> members;
+  final List<String>? members_email;
   final DateTime startDate;
   final DateTime endDate;
   final double progress;
@@ -18,6 +19,7 @@ class Project {
     required this.description,
     required this.type,
     required this.members,
+    this.members_email,
     required this.startDate,
     required this.endDate,
     required this.progress,
@@ -34,6 +36,9 @@ class Project {
       status: json['status'] ?? '',
       members: (json['members_names'] != null)
           ? json['members_names'].toString().split(',').map((e) => e.trim()).toList()
+          : [],
+      members_email: (json['members_email'] != null)
+          ? json['members_email'].toString().split(',').map((e) => e.trim()).toList()
           : [],
       startDate: DateTime.tryParse(json['start_date'] ?? '') ?? DateTime.now(),
       endDate: DateTime.tryParse(json['end_date'] ?? '') ?? DateTime.now(),

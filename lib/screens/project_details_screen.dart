@@ -953,6 +953,16 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
             ],
           ),
         ),
+        PopupMenuItem<String>(
+          value: 'add',
+          child: Row(
+            children: [
+              Icon(Icons.note, size: 18),
+              SizedBox(width: 8),
+              Text('Add Note'),
+            ],
+          ),
+        ),
       ],
       elevation: 8,
     ).then((value) {
@@ -1024,6 +1034,54 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
     });
   }
 
+  Future<String?> _showAddNoteDialog() async {
+    final _formKey=GlobalKey<FormState>();
+    TextEditingController reasonController = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Add Note"),
+          content: Form(
+            key: _formKey,
+            child: TextFormField(
+              validator: (val) {
+                if (val!.isEmpty) {
+                  return "Please Enter Your Note";
+                }
+                return null;
+              },
+              controller: reasonController,
+              decoration: InputDecoration(hintText: "Enter Note..."),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if(_formKey.currentState!.validate()){
+                  String reason=reasonController.text.toString();
+                  if(reason.isEmpty){
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text("Please Enter Reason")));
+                  }else{
+                    Navigator.pop(context, reasonController.text.trim());
+                  }
+                }
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _handleMenuAction(String action, Project project) {
     switch (action) {
       case 'view':
@@ -1031,6 +1089,9 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
         break;
       case 'edit':
         _navigateToEditProject(project);
+        break;
+      case 'add':
+        _showAddNoteDialog;
         break;
     }
   }
@@ -1090,4 +1151,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
       return [];
     }
   }
+
+
 }
