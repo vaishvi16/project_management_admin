@@ -227,31 +227,31 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                                   ? 'Please enter project description'
                                   : null,
                             ),
-                             SizedBox(height: 20),
+                            SizedBox(height: 20),
 
                             // Project Type Dropdown
                             _buildTypeDropdown(),
-                             SizedBox(height: 20),
+                            SizedBox(height: 20),
 
                             _buildDesignerDropdown(),
-                             SizedBox(height: 20),
+                            SizedBox(height: 20),
                             _buildDeveloperDropdown(),
-                             SizedBox(height: 20),
+                            SizedBox(height: 20),
 
                             _buildTesterDropdown(),
-                             SizedBox(height: 20),
+                            SizedBox(height: 20),
 
                             // Backend Dropdown
                             _buildBackendDropdown(),
-                             SizedBox(height: 20),
+                            SizedBox(height: 20),
 
                             // Selected Team Members Display
                             _buildSelectedTeamMembers(),
-                             SizedBox(height: 20),
+                            SizedBox(height: 20),
 
                             // Date Selection Section
                             _buildDateSelectionSection(),
-                             SizedBox(height: 30),
+                            SizedBox(height: 30),
 
                             // Add Project Button
                             SizedBox(

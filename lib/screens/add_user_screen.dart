@@ -144,7 +144,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                             icon: Icons.phone_android_outlined,
                             keyboardType: TextInputType.phone,
                             validator: (value) {
-                              if (value?.isEmpty ?? true) return 'Please enter mobile number';
+                              if (value?.isEmpty ??    true) return 'Please enter mobile number';
 
                               if (value!.length != 10) {
                                 return 'Mobile number must be 10 digits';
@@ -291,8 +291,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
 
   void _addUser() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Add user logic here
-
       _insertUser();
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
